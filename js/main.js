@@ -159,7 +159,7 @@ window.addEventListener('load', function() {
     }, 50);
 });
 
-// Initialisation du bouton "retour à l'exploration" - MOINS SENSIBLE
+// Initialisation du bouton "retour à l'exploration" - REDIRECTION VERS LOCALHOST
 function initReturnExploration() {
     console.log('=== INITIALISATION BOUTON RETOUR EXPLORATION ===');
     
@@ -210,18 +210,13 @@ function initReturnExploration() {
     observer.observe(expeditionSection);
     console.log('Observer attaché avec seuil 50%');
     
-    // Suppression du test automatique - ne s'affiche que si vraiment visité
-    
-    // Gestion du clic
+    // Gestion du clic - REDIRECTION VERS LOCALHOST SANS LOADER
     returnBtn.addEventListener('click', function(e) {
         e.preventDefault();
-        console.log('>>> CLIC SUR BOUTON RETOUR EXPLORATION <<<');
-        showGlobalLoader();
+        console.log('>>> CLIC SUR BOUTON RETOUR EXPLORATION - REDIRECTION IMMÉDIATE VERS LOCALHOST <<<');
         
-        setTimeout(() => {
-            hideGlobalLoader();
-            console.log('Redirection simulée');
-        }, 1000);
+        // Redirection immédiate sans loader pour éviter le carré noir
+        window.location.href = 'http://localhost:3000/';
     });
     
     console.log('=== FIN INITIALISATION BOUTON ===');
