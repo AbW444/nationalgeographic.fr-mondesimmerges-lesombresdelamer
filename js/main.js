@@ -1,134 +1,103 @@
-// JavaScript principal avec animations bidirectionnelles au scroll et loader global
+// JavaScript principal avec support tactile et responsive
+// Variables globales
+let currentGalleryIndex = 0;
+let touchStartX = 0;
+let touchEndX = 0;
+let isMenuOpen = false;
+
 document.addEventListener("DOMContentLoaded", function() {
-    console.log('=== DEMARRAGE DE L\'APPLICATION ===');
+    console.log('=== DEMARRAGE APPLICATION MOBILE/TACTILE ===');
     
-    // *** MASQUER IMMEDIATEMENT LE CURSEUR PENDANT LE CHARGEMENT ***
+    // Détection du type d'appareil
+    const isMobile = window.innerWidth < 768;
+    const isTablet = window.innerWidth >= 768 && window.innerWidth < 1025;
+    const isDesktop = window.innerWidth >= 1025;
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    
+    // *** NOUVEAU LOADER AVEC L-JELLY VISIBLE ***
     document.body.classList.add('loading');
-    document.body.style.cursor = 'none !important';
-    document.documentElement.style.cursor = 'none !important';
     
-    // *** SOLUTION ALTERNATIVE POUR LE LOADER ET CURSEUR ***
-    // Créer un loader de secours si celui du HTML ne fonctionne pas
-    let loaderBackup = document.createElement('div');
-    loaderBackup.id = 'loader-backup';
-    loaderBackup.style.cssText = `
+    // Créer le nouveau loader avec l-jelly - comme dans app.js
+    const customLoader = document.createElement('div');
+    customLoader.className = 'custom-loader';
+    customLoader.style.cssText = `
         position: fixed !important;
         top: 0 !important;
         left: 0 !important;
         width: 100% !important;
         height: 100% !important;
         background-color: #000 !important;
-        z-index: 999999 !important;
         display: flex !important;
         justify-content: center !important;
         align-items: center !important;
+        z-index: 999999 !important;
         opacity: 1 !important;
         visibility: visible !important;
+        transition: opacity 0.8s ease !important;
     `;
     
-    // Créer une animation de chargement simple mais visible
-    let spinnerBackup = document.createElement('div');
-    spinnerBackup.style.cssText = `
-        width: 40px !important;
-        height: 40px !important;
-        border: 3px solid rgba(255, 221, 0, 0.3) !important;
-        border-top: 3px solid #ffdd00 !important;
-        border-radius: 50% !important;
-        animation: spin 1s linear infinite !important;
+    // Enregistrer l-jelly si nécessaire (comme dans app.js)
+    if (window.jelly && window.jelly.register) {
+        window.jelly.register();
+    }
+    
+    // Créer l'élément l-jelly comme dans app.js
+    const jellyLoader = document.createElement('l-jelly');
+    jellyLoader.setAttribute('size', '60');
+    jellyLoader.setAttribute('speed', '1.2');
+    jellyLoader.setAttribute('color', '#ffcc00');
+    jellyLoader.style.cssText = `
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
     `;
     
-    // Ajouter l'animation CSS
-    let style = document.createElement('style');
-    style.textContent = `
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        body.loading, body.loading * {
-            cursor: none !important;
-        }
-    `;
-    document.head.appendChild(style);
+    customLoader.appendChild(jellyLoader);
+    document.body.appendChild(customLoader);
     
-    loaderBackup.appendChild(spinnerBackup);
-    document.body.insertBefore(loaderBackup, document.body.firstChild);
+    console.log('Loader l-jelly créé et affiché');
     
-    console.log('Loader de secours créé et affiché');
-    
-    // S'assurer que la page est en haut au chargement - FORCE ABSOLU
+    // Force le retour en haut
     history.scrollRestoration = 'manual';
     window.scrollTo(0, 0);
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
     
-    // Variables globales
-    let hasVisitedExpedition = false;
+    // LANCER LA VIDÉO IMMÉDIATEMENT
+    startGlobeVideoImmediately();
     
-    // GESTION DU LOADER ORIGINAL
-    const loader = document.querySelector('.loader');
-    console.log('Loader original trouvé:', loader);
-    
-    if (loader) {
-        // Forcer la visibilité du loader original également
-        loader.style.cssText = `
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100% !important;
-            height: 100% !important;
-            background-color: #000 !important;
-            z-index: 999998 !important;
-            display: flex !important;
-            justify-content: center !important;
-            align-items: center !important;
-            opacity: 1 !important;
-            visibility: visible !important;
-        `;
-        console.log('Loader original forcé visible');
-    }
-    
-    // Masquer TOUS les loaders après 2.5 secondes et DEMARRER LA VIDEO TEXTURE
+    // MASQUER LE LOADER APRÈS 2 SECONDES ET RÉVÉLER LE SITE
     setTimeout(() => {
-        console.log('=== MASQUAGE DES LOADERS ET DEMARRAGE VIDEO TEXTURE ===');
+        console.log('=== MASQUAGE DU LOADER ET RÉVÉLATION DU SITE ===');
         
-        // Masquer le loader de secours
-        if (loaderBackup) {
-            loaderBackup.style.opacity = '0';
-            setTimeout(() => {
-                loaderBackup.remove();
-            }, 500);
-        }
+        // Transition fluide du loader
+        customLoader.style.opacity = '0';
         
-        // Masquer le loader original
-        if (loader) {
-            loader.classList.add('hidden');
-            loader.style.opacity = '0';
-            setTimeout(() => {
-                loader.style.display = 'none';
-            }, 500);
-        }
-        
-        // RETIRER la classe loading et réactiver le curseur personnalisé
         setTimeout(() => {
+            customLoader.remove();
             document.body.classList.remove('loading');
-            initCustomCursor();
-            console.log('Curseur personnalisé initialisé après loader');
             
-            // LANCER LA VIDÉO TEXTURE MAINTENANT
-            if (window.startGlobeVideoAfterLoading) {
-                window.startGlobeVideoAfterLoading();
+            // Initialiser le curseur personnalisé UNIQUEMENT sur desktop avec souris
+            if (isDesktop && !isTouchDevice) {
+                initCustomCursor();
+                console.log('Curseur personnalisé initialisé pour desktop');
             }
             
-        }, 600);
+            console.log('Site révélé, vidéo active');
+        }, 800);
         
-    }, 2500);
+    }, 2000);
     
-    // Configuration du loader global
+    // Masquer l'ancien loader s'il existe
+    const oldLoader = document.querySelector('.loader');
+    if (oldLoader) {
+        oldLoader.style.display = 'none';
+    }
+    
+    // Initialiser toutes les fonctionnalités
     initGlobalLoader();
-    
-    // Initialiser les autres fonctionnalités (SANS le curseur pour l'instant)
+    initMobileMenu();
     initAnimations();
-    animateNavLinks();
     initSideNav();
     initBackToTop();
     initShareButtons();
@@ -136,21 +105,96 @@ document.addEventListener("DOMContentLoaded", function() {
     initLogoClick();
     initGallery();
     initReturnExploration();
+    animateNavLinks();
     
-    // FORCE le retour en haut lors du rechargement - DEFINITIF
+    // Gestion du redimensionnement
+    window.addEventListener('resize', handleResize);
+    
+    function handleResize() {
+        const newIsMobile = window.innerWidth < 768;
+        const newIsTablet = window.innerWidth >= 768 && window.innerWidth < 1025;
+        
+        // Fermer le menu mobile si on passe à desktop
+        if (window.innerWidth >= 1025 && isMenuOpen) {
+            closeMenu();
+        }
+        
+        // Réinitialiser la galerie si nécessaire
+        if ((isMobile && !newIsMobile) || (!isMobile && newIsMobile)) {
+            initGallery();
+        }
+    }
+    
+    // Force le retour en haut lors du rechargement
     window.addEventListener('beforeunload', function() {
         window.scrollTo(0, 0);
     });
     
-    // Force également au cas où
     setTimeout(() => {
         window.scrollTo(0, 0);
     }, 100);
     
     console.log('=== INITIALISATION TERMINEE ===');
+    console.log('Type d\'appareil:', { isMobile, isTablet, isDesktop, isTouchDevice });
 });
 
-// Force le retour en haut - DEFINITIF dans le code
+// Nouvelle fonction pour lancer la vidéo immédiatement
+function startGlobeVideoImmediately() {
+    const globeVideo = document.querySelector('.globe-video');
+    if (globeVideo) {
+        console.log('>>> LANCEMENT IMMÉDIAT DE LA VIDÉO TEXTURE <<<');
+        
+        globeVideo.muted = true;
+        globeVideo.loop = true;
+        globeVideo.playsInline = true;
+        globeVideo.autoplay = true;
+        
+        // Révéler la vidéo progressivement
+        globeVideo.style.opacity = '0';
+        globeVideo.style.transition = 'opacity 1.5s ease';
+        
+        const playVideo = async function() {
+            try {
+                await globeVideo.play();
+                console.log("Vidéo texture lancée immédiatement");
+                
+                // Révéler la vidéo après le début de lecture
+                setTimeout(() => {
+                    globeVideo.style.opacity = '1';
+                }, 500);
+                
+            } catch (error) {
+                console.log("Erreur lecture vidéo:", error);
+                setTimeout(async () => {
+                    try {
+                        await globeVideo.play();
+                        console.log("Vidéo texture - 2ème tentative réussie");
+                        globeVideo.style.opacity = '1';
+                    } catch (e) {
+                        console.log("Vidéo texture - 2ème tentative échouée");
+                    }
+                }, 1000);
+            }
+        };
+        
+        // Lancer immédiatement
+        if (globeVideo.readyState >= 2) {
+            playVideo();
+        } else {
+            globeVideo.addEventListener('canplay', playVideo, { once: true });
+        }
+        
+        // Surveillance continue
+        setInterval(() => {
+            if (globeVideo.paused && !document.body.classList.contains('loading')) {
+                console.log("Vidéo s'est arrêtée - relancement...");
+                globeVideo.play().catch(e => console.log("Erreur relancement:", e));
+            }
+        }, 3000);
+    }
+}
+
+// Force le retour en haut au chargement
 window.addEventListener('load', function() {
     setTimeout(() => {
         window.scrollTo(0, 0);
@@ -159,7 +203,85 @@ window.addEventListener('load', function() {
     }, 50);
 });
 
-// Initialisation du bouton "retour à l'exploration" - REDIRECTION VERS LOCALHOST
+// Initialisation du menu mobile/tablette
+function initMobileMenu() {
+    console.log('=== INITIALISATION MENU MOBILE ===');
+    
+    const menuToggle = document.querySelector('.mobile-menu-toggle');
+    const sideNav = document.querySelector('.side-nav');
+    const menuOverlay = document.querySelector('.menu-overlay');
+    const navLinks = document.querySelectorAll('.nav-link');
+    
+    if (!menuToggle || !sideNav || !menuOverlay) {
+        console.error('Éléments du menu mobile manquants');
+        return;
+    }
+    
+    // Afficher le bouton hamburger après la section hero
+    window.addEventListener('scroll', function() {
+        const heroHeight = document.querySelector('#hero').offsetHeight;
+        if (window.scrollY > heroHeight * 0.8) {
+            menuToggle.classList.add('visible');
+        } else {
+            menuToggle.classList.remove('visible');
+        }
+    });
+    
+    // Toggle du menu
+    menuToggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        if (isMenuOpen) {
+            closeMenu();
+        } else {
+            openMenu();
+        }
+    });
+    
+    // Fermer le menu en cliquant sur l'overlay
+    menuOverlay.addEventListener('click', closeMenu);
+    
+    // Fermer le menu en cliquant sur un lien
+    navLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            if (window.innerWidth < 1025) {
+                closeMenu();
+            }
+        });
+    });
+    
+    // Fonctions d'ouverture/fermeture du menu
+    window.openMenu = openMenu;
+    window.closeMenu = closeMenu;
+    
+    function openMenu() {
+        sideNav.classList.add('open');
+        menuOverlay.classList.add('active');
+        menuToggle.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        isMenuOpen = true;
+        console.log('Menu ouvert');
+    }
+    
+    function closeMenu() {
+        sideNav.classList.remove('open');
+        menuOverlay.classList.remove('active');
+        menuToggle.classList.remove('active');
+        document.body.style.overflow = '';
+        isMenuOpen = false;
+        console.log('Menu fermé');
+    }
+    
+    // Fermer le menu avec la touche Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && isMenuOpen) {
+            closeMenu();
+        }
+    });
+}
+
+// Initialisation du bouton "retour à l'exploration" - AVEC ANIMATION DYNAMIQUE
 function initReturnExploration() {
     console.log('=== INITIALISATION BOUTON RETOUR EXPLORATION ===');
     
@@ -179,21 +301,19 @@ function initReturnExploration() {
         return;
     }
     
-    // Variable pour suivre si on a visité l'expédition
+    // Variable locale pour éviter les conflits
     let expeditionVisited = false;
     
-    // Observer MOINS sensible - seuil plus élevé
+    // Observer pour détecter la visite de l'expédition
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             console.log('Observer déclenché - isIntersecting:', entry.isIntersecting);
             console.log('Intersection ratio:', entry.intersectionRatio);
             
-            // Plus strict : 50% de la section doit être visible
             if (entry.isIntersecting && entry.intersectionRatio >= 0.5 && !expeditionVisited) {
                 expeditionVisited = true;
                 console.log('>>> EXPEDITION VRAIMENT VISITEE (50%) - AFFICHAGE DU BOUTON <<<');
                 
-                // Forcer l'affichage
                 returnBtn.style.opacity = '1';
                 returnBtn.style.pointerEvents = 'all';
                 returnBtn.style.transform = 'translateY(0)';
@@ -203,28 +323,43 @@ function initReturnExploration() {
             }
         });
     }, {
-        threshold: 0.5, // 50% de la section doit être visible
-        rootMargin: '-100px 0px -100px 0px' // Marges pour être encore moins sensible
+        threshold: 0.5,
+        rootMargin: '-100px 0px -100px 0px'
     });
     
     observer.observe(expeditionSection);
     console.log('Observer attaché avec seuil 50%');
     
-    // Gestion du clic - REDIRECTION VERS LOCALHOST SANS LOADER
+    // NOUVEAU: Animation dynamique quand on est en haut du site
+    window.addEventListener('scroll', function() {
+        if (returnBtn.classList.contains('visible')) {
+            if (window.scrollY < 100) {
+                // En haut du site - animation pulse
+                returnBtn.classList.add('at-top');
+            } else {
+                // Pas en haut - retour normal
+                returnBtn.classList.remove('at-top');
+            }
+        }
+    });
+    
+    // Gestion du clic - REDIRECTION VERS LOCALHOST
     returnBtn.addEventListener('click', function(e) {
         e.preventDefault();
-        console.log('>>> CLIC SUR BOUTON RETOUR EXPLORATION - REDIRECTION IMMÉDIATE VERS LOCALHOST <<<');
+        console.log('>>> CLIC SUR BOUTON RETOUR EXPLORATION - REDIRECTION IMMÉDIATE <<<');
         
-        // Redirection immédiate sans loader pour éviter le carré noir
-        window.location.href = 'http://localhost:3000/';
+        // Animation de clic
+        returnBtn.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+            window.location.href = 'http://localhost:3000/';
+        }, 150);
     });
     
     console.log('=== FIN INITIALISATION BOUTON ===');
 }
 
-// Initialisation du loader global pour tous les temps de chargement
+// Initialisation du loader global
 function initGlobalLoader() {
-    // Créer le loader global s'il n'existe pas
     let globalLoader = document.querySelector('.global-loader');
     if (!globalLoader) {
         globalLoader = document.createElement('div');
@@ -237,17 +372,15 @@ function initGlobalLoader() {
         document.body.appendChild(globalLoader);
     }
     
-    // Fonction pour afficher le loader
     window.showGlobalLoader = function() {
         globalLoader.classList.add('active');
     };
     
-    // Fonction pour masquer le loader
     window.hideGlobalLoader = function() {
         globalLoader.classList.remove('active');
     };
     
-    // Afficher le loader lors des navigations internes
+    // Loader pour les navigations internes
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function(e) {
             showGlobalLoader();
@@ -257,42 +390,40 @@ function initGlobalLoader() {
         });
     });
     
-    // Afficher le loader lors du rechargement de page
     window.addEventListener('beforeunload', function() {
         showGlobalLoader();
     });
-    
-    // Afficher le loader lors des changements d'état
-    let isLoading = false;
-    window.addEventListener('load', function() {
-        if (isLoading) {
-            hideGlobalLoader();
-            isLoading = false;
-        }
-    });
 }
 
-// Initialisation de la galerie photo avec chargement dynamique des images
+// Initialisation de la galerie avec support tactile
 function initGallery() {
+    console.log('=== INITIALISATION GALERIE TACTILE ===');
+    
     loadGalleryImages();
     
     const galleryTrack = document.querySelector('.gallery-track');
     const dots = document.querySelectorAll('.gallery-dot');
     const prevBtn = document.querySelector('.gallery-prev');
     const nextBtn = document.querySelector('.gallery-next');
-    let currentIndex = 0;
     let isFullscreenMode = false;
     let autoplayInterval;
     
-    // Créer l'élément pour le mode plein écran SANS croix
-    const fullscreenMode = document.createElement('div');
-    fullscreenMode.className = 'fullscreen-mode';
-    fullscreenMode.innerHTML = `
-        <img src="" alt="Image en plein écran" class="fullscreen-image">
-    `;
-    document.body.appendChild(fullscreenMode);
+    if (!galleryTrack) {
+        console.error('Galerie non trouvée');
+        return;
+    }
     
-    // Gérer les événements pour le mode plein écran
+    // Créer l'élément pour le mode plein écran
+    let fullscreenMode = document.querySelector('.fullscreen-mode');
+    if (!fullscreenMode) {
+        fullscreenMode = document.createElement('div');
+        fullscreenMode.className = 'fullscreen-mode';
+        fullscreenMode.innerHTML = `
+            <img src="" alt="Image en plein écran" class="fullscreen-image">
+        `;
+        document.body.appendChild(fullscreenMode);
+    }
+    
     const fsImage = fullscreenMode.querySelector('.fullscreen-image');
     
     // Fonction pour afficher une slide spécifique
@@ -317,28 +448,73 @@ function initGallery() {
             updatedDots[index].classList.add('active');
         }
         
-        currentIndex = index;
+        currentGalleryIndex = index;
+        console.log('Slide active:', index);
     }
     
-    // Démarrer/arrêter le défilement automatique
-    function startAutoplay() {
-        autoplayInterval = setInterval(() => {
-            if (!isFullscreenMode) {
-                const gallerySection = document.querySelector('#gallery');
-                const rect = gallerySection.getBoundingClientRect();
-                
-                if (rect.top <= 0 && rect.bottom >= window.innerHeight / 2) {
-                    showSlide(currentIndex + 1);
-                }
+    // Navigation par boutons
+    if (prevBtn) {
+        prevBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSlide(currentGalleryIndex - 1);
+        });
+    }
+    
+    if (nextBtn) {
+        nextBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSlide(currentGalleryIndex + 1);
+        });
+    }
+    
+    // Navigation par dots
+    function initDots() {
+        const dots = document.querySelectorAll('.gallery-dot');
+        dots.forEach((dot, index) => {
+            dot.addEventListener('click', (e) => {
+                e.preventDefault();
+                showSlide(index);
+            });
+        });
+    }
+    
+    // Support tactile pour le swipe
+    if ('ontouchstart' in window) {
+        galleryTrack.addEventListener('touchstart', handleTouchStart, { passive: true });
+        galleryTrack.addEventListener('touchmove', handleTouchMove, { passive: true });
+        galleryTrack.addEventListener('touchend', handleTouchEnd, { passive: true });
+    }
+    
+    function handleTouchStart(e) {
+        touchStartX = e.touches[0].clientX;
+    }
+    
+    function handleTouchMove(e) {
+        if (!touchStartX) return;
+        touchEndX = e.touches[0].clientX;
+    }
+    
+    function handleTouchEnd(e) {
+        if (!touchStartX || !touchEndX) return;
+        
+        const difference = touchStartX - touchEndX;
+        const threshold = 50; // Seuil minimum pour déclencher le swipe
+        
+        if (Math.abs(difference) > threshold) {
+            if (difference > 0) {
+                // Swipe vers la gauche - image suivante
+                showSlide(currentGalleryIndex + 1);
+            } else {
+                // Swipe vers la droite - image précédente
+                showSlide(currentGalleryIndex - 1);
             }
-        }, 8000);
+        }
+        
+        touchStartX = 0;
+        touchEndX = 0;
     }
     
-    function stopAutoplay() {
-        clearInterval(autoplayInterval);
-    }
-    
-    // Activer le mode plein écran
+    // Mode plein écran
     function activateFullscreenMode(imgSrc) {
         showGlobalLoader();
         
@@ -352,7 +528,6 @@ function initGallery() {
         };
     }
     
-    // Désactiver le mode plein écran
     function deactivateFullscreenMode() {
         fullscreenMode.classList.remove('active');
         isFullscreenMode = false;
@@ -360,88 +535,103 @@ function initGallery() {
         document.body.style.overflow = '';
     }
     
-    // Fermeture du mode plein écran par clic sur le fond (pas sur l'image)
+    // Fermer le mode plein écran par clic sur le fond
     fullscreenMode.addEventListener('click', function(e) {
-        // Si on clique sur le fond (pas sur l'image), fermer le mode plein écran
         if (e.target === fullscreenMode) {
             deactivateFullscreenMode();
         }
     });
     
-    // Navigation en mode plein écran via clic sur l'image
-    fsImage.addEventListener('click', function(e) {
-        e.stopPropagation();
-        showSlide(currentIndex + 1);
-        
-        showGlobalLoader();
-        const currentSlide = document.querySelector('.gallery-slide.active');
-        const currentImg = currentSlide.querySelector('.gallery-image');
-        fsImage.src = currentImg.src;
-        fsImage.onload = function() {
-            hideGlobalLoader();
-        };
-    });
-    
-    // Gérer le clic sur les flèches
-    if (prevBtn) {
-        prevBtn.addEventListener('click', () => {
-            showSlide(currentIndex - 1);
+    // Navigation en mode plein écran
+    if ('ontouchstart' in window) {
+        fsImage.addEventListener('touchstart', handleTouchStart, { passive: true });
+        fsImage.addEventListener('touchmove', handleTouchMove, { passive: true });
+        fsImage.addEventListener('touchend', function(e) {
+            handleTouchEnd(e);
+            // Mettre à jour l'image en plein écran
+            const currentSlide = document.querySelector('.gallery-slide.active');
+            const currentImg = currentSlide.querySelector('.gallery-image');
+            if (currentImg) {
+                showGlobalLoader();
+                fsImage.src = currentImg.src;
+                fsImage.onload = function() {
+                    hideGlobalLoader();
+                };
+            }
+        }, { passive: true });
+    } else {
+        // Navigation par clic sur desktop
+        fsImage.addEventListener('click', function(e) {
+            e.stopPropagation();
+            showSlide(currentGalleryIndex + 1);
+            
+            showGlobalLoader();
+            const currentSlide = document.querySelector('.gallery-slide.active');
+            const currentImg = currentSlide.querySelector('.gallery-image');
+            fsImage.src = currentImg.src;
+            fsImage.onload = function() {
+                hideGlobalLoader();
+            };
         });
     }
     
-    if (nextBtn) {
-        nextBtn.addEventListener('click', () => {
-            showSlide(currentIndex + 1);
-        });
-    }
-    
-    // Gérer le clic sur les points
-    function initDots() {
-        const dots = document.querySelectorAll('.gallery-dot');
-        dots.forEach((dot, index) => {
-            dot.addEventListener('click', () => {
-                showSlide(index);
-            });
-        });
-    }
-    
-    initDots();
-    
-    // Ajouter des écouteurs d'événements pour le clic sur les images
+    // Ajouter des écouteurs pour les clics sur les images
     function initImageClicks() {
         const imageContainers = document.querySelectorAll('.gallery-image-container');
         imageContainers.forEach(container => {
-            container.addEventListener('click', function() {
+            container.addEventListener('click', function(e) {
+                e.preventDefault();
                 const img = this.querySelector('.gallery-image');
-                activateFullscreenMode(img.src);
+                if (img) {
+                    activateFullscreenMode(img.src);
+                }
             });
         });
     }
     
-    setTimeout(initImageClicks, 1000);
+    // Défilement automatique (seulement sur desktop)
+    function startAutoplay() {
+        if (window.innerWidth >= 1025 && !('ontouchstart' in window)) {
+            autoplayInterval = setInterval(() => {
+                if (!isFullscreenMode) {
+                    const gallerySection = document.querySelector('#gallery');
+                    const rect = gallerySection.getBoundingClientRect();
+                    
+                    if (rect.top <= 0 && rect.bottom >= window.innerHeight / 2) {
+                        showSlide(currentGalleryIndex + 1);
+                    }
+                }
+            }, 8000);
+        }
+    }
     
-    // Gestion des touches clavier pour la navigation
+    function stopAutoplay() {
+        clearInterval(autoplayInterval);
+    }
+    
+    // Gestion des touches clavier
     document.addEventListener('keydown', e => {
         if (isFullscreenMode) {
-            // Supprimer la gestion de la touche Escape puisqu'il n'y a plus de croix
-            if (e.key === 'ArrowLeft') {
-                showSlide(currentIndex - 1);
-                showGlobalLoader();
+            if (e.key === 'Escape') {
+                deactivateFullscreenMode();
+            } else if (e.key === 'ArrowLeft') {
+                showSlide(currentGalleryIndex - 1);
                 const currentSlide = document.querySelector('.gallery-slide.active');
                 const currentImg = currentSlide.querySelector('.gallery-image');
-                fsImage.src = currentImg.src;
-                fsImage.onload = function() {
-                    hideGlobalLoader();
-                };
+                if (currentImg) {
+                    showGlobalLoader();
+                    fsImage.src = currentImg.src;
+                    fsImage.onload = () => hideGlobalLoader();
+                }
             } else if (e.key === 'ArrowRight') {
-                showSlide(currentIndex + 1);
-                showGlobalLoader();
+                showSlide(currentGalleryIndex + 1);
                 const currentSlide = document.querySelector('.gallery-slide.active');
                 const currentImg = currentSlide.querySelector('.gallery-image');
-                fsImage.src = currentImg.src;
-                fsImage.onload = function() {
-                    hideGlobalLoader();
-                };
+                if (currentImg) {
+                    showGlobalLoader();
+                    fsImage.src = currentImg.src;
+                    fsImage.onload = () => hideGlobalLoader();
+                }
             }
         } else {
             const gallerySection = document.querySelector('#gallery');
@@ -449,18 +639,20 @@ function initGallery() {
             
             if (rect.top <= 0 && rect.bottom >= window.innerHeight / 2) {
                 if (e.key === 'ArrowLeft') {
-                    showSlide(currentIndex - 1);
+                    showSlide(currentGalleryIndex - 1);
                 } else if (e.key === 'ArrowRight') {
-                    showSlide(currentIndex + 1);
+                    showSlide(currentGalleryIndex + 1);
                 }
             }
         }
     });
     
+    setTimeout(initImageClicks, 1000);
+    setTimeout(initDots, 500);
     startAutoplay();
 }
 
-// Chargement dynamique des images de la galerie
+// Chargement dynamique des images de la galerie - INCHANGÉ
 function loadGalleryImages() {
     const galleryTrack = document.querySelector('.gallery-track');
     const galleryDots = document.querySelector('.gallery-dots');
@@ -497,7 +689,21 @@ function loadGalleryImages() {
         };
         
         imageContainer.appendChild(image);
-        slide.appendChild(imageContainer);
+        
+        // Ajouter les informations sur mobile/tablette
+        if (window.innerWidth < 1025) {
+            const imageInfo = document.createElement('div');
+            imageInfo.className = 'image-info';
+            imageInfo.innerHTML = `
+                <h3>Image ${i}</h3>
+                <p>Description de l'image ${i} de la galerie.</p>
+            `;
+            slide.appendChild(imageContainer);
+            slide.appendChild(imageInfo);
+        } else {
+            slide.appendChild(imageContainer);
+        }
+        
         galleryTrack.appendChild(slide);
         
         const dot = document.createElement('span');
@@ -507,11 +713,12 @@ function loadGalleryImages() {
     }
 }
 
-// Initialiser le clic sur le logo pour retourner en haut
+// Clic sur le logo pour retourner en haut - INCHANGÉ
 function initLogoClick() {
     const logo = document.querySelector('.fixed-logo');
     if (logo) {
-        logo.addEventListener('click', function() {
+        logo.addEventListener('click', function(e) {
+            e.preventDefault();
             showGlobalLoader();
             
             document.body.classList.add('scrolling-up');
@@ -529,7 +736,7 @@ function initLogoClick() {
     }
 }
 
-// Gestion du menu latéral qui n'apparaît qu'après la section hero
+// Gestion du menu latéral - Adapté desktop/mobile
 function initSideNav() {
     const sideNav = document.querySelector('.side-nav');
     const heroSection = document.querySelector('#hero');
@@ -549,17 +756,20 @@ function initSideNav() {
     });
     
     window.addEventListener('scroll', function() {
-        if (window.scrollY > heroSection.offsetHeight * 0.8) {
-            sideNav.classList.add('visible');
-        } else {
-            sideNav.classList.remove('visible');
+        // Afficher la navigation seulement sur desktop après le hero
+        if (window.innerWidth >= 1025) {
+            if (window.scrollY > heroSection.offsetHeight * 0.8) {
+                sideNav.classList.add('visible');
+            } else {
+                sideNav.classList.remove('visible');
+            }
         }
         
         updateActiveSection(sections);
     });
 }
 
-// Mettre à jour la section active dans le menu
+// Mettre à jour la section active - INCHANGÉ
 function updateActiveSection(sections) {
     const scrollPosition = window.scrollY + window.innerHeight / 3;
     
@@ -577,9 +787,11 @@ function updateActiveSection(sections) {
     });
 }
 
-// Initialisation du bouton de retour en haut de page
+// Bouton de retour en haut - Adapté tactile
 function initBackToTop() {
     const backToTopBtn = document.querySelector('.back-to-top');
+    
+    if (!backToTopBtn) return;
     
     window.addEventListener('scroll', function() {
         if (window.scrollY > 500) {
@@ -589,7 +801,8 @@ function initBackToTop() {
         }
     });
     
-    backToTopBtn.addEventListener('click', function() {
+    backToTopBtn.addEventListener('click', function(e) {
+        e.preventDefault();
         showGlobalLoader();
         
         document.body.classList.add('scrolling-up');
@@ -606,94 +819,72 @@ function initBackToTop() {
     });
 }
 
-// Gestion améliorée des vidéos - VIDÉO TEXTURE APRÈS CHARGEMENT UNIQUEMENT
+// Gestion des vidéos - Optimisée tactile
 function fixVideos() {
     console.log('=== INITIALISATION DES VIDEOS ===');
     
-    // Vidéo de texture (hero) - ATTENDRE LA FIN DU CHARGEMENT
+    // Vidéo de texture (hero)
     const globeVideo = document.querySelector('.globe-video');
     if (globeVideo) {
         console.log('Vidéo texture trouvée - configuration...');
         
-        // FORCER L'ARRÊT initial de la vidéo
         globeVideo.pause();
         globeVideo.currentTime = 0;
-        globeVideo.autoplay = false; // Désactiver l'autoplay initial
+        globeVideo.autoplay = false;
         globeVideo.muted = true;
-        globeVideo.loop = true; // S'assurer que la boucle est activée
+        globeVideo.loop = true;
         globeVideo.playsInline = true;
-        
-        // Masquer la vidéo pendant le chargement
         globeVideo.style.opacity = '0';
         
         console.log('Vidéo texture mise en pause - attente fin du chargement');
         
-        // Fonction pour lancer la vidéo de manière robuste
         function startGlobeVideo() {
             console.log('>>> LANCEMENT VIDÉO TEXTURE APRÈS CHARGEMENT <<<');
             
-            // Réafficher la vidéo
             globeVideo.style.opacity = '1';
             globeVideo.style.transition = 'opacity 1s ease';
-            
-            // Forcer le rechargement de la vidéo
             globeVideo.load();
             
             const playVideo = async function() {
                 try {
                     globeVideo.currentTime = 0;
                     await globeVideo.play();
-                    console.log("Vidéo texture lancée avec succès après chargement");
+                    console.log("Vidéo texture lancée avec succès");
                 } catch (error) {
                     console.log("Erreur lecture vidéo texture:", error);
                     
-                    // Nouvelle tentative après 1 seconde
                     setTimeout(async () => {
                         try {
                             await globeVideo.play();
                             console.log("Vidéo texture - 2ème tentative réussie");
                         } catch (e) {
-                            console.log("Vidéo texture - 2ème tentative échouée, création nouveau clone");
-                            
-                            // Créer un clone de la vidéo en dernier recours
-                            const newVideo = globeVideo.cloneNode(true);
-                            newVideo.muted = true;
-                            newVideo.loop = true;
-                            newVideo.autoplay = false;
-                            globeVideo.parentNode.replaceChild(newVideo, globeVideo);
-                            
-                            setTimeout(() => {
-                                newVideo.play().catch(err => console.log("Clone vidéo échec:", err));
-                            }, 500);
+                            console.log("Vidéo texture - 2ème tentative échouée");
                         }
                     }, 1000);
                 }
             };
             
-            // Lancer la vidéo immédiatement après le chargement
             playVideo();
             
-            // Surveillance continue pour éviter les freeze
+            // Surveillance continue
             setInterval(() => {
                 if (globeVideo.paused || globeVideo.ended) {
                     console.log("Vidéo texture s'est arrêtée - relancement...");
                     globeVideo.currentTime = 0;
                     globeVideo.play().catch(e => {
                         console.log("Erreur relancement vidéo texture:", e);
-                        // Forcer le rechargement si nécessaire
                         globeVideo.load();
                         setTimeout(() => {
                             globeVideo.play().catch(err => console.log("Rechargement forcé échoué:", err));
                         }, 1000);
                     });
                 }
-            }, 5000); // Vérification toutes les 5 secondes
+            }, 5000);
         }
         
-        // Exporter la fonction pour l'appeler après le chargement
         window.startGlobeVideoAfterLoading = startGlobeVideo;
         
-        // Gestionnaire d'événements pour éviter les freeze
+        // Gestionnaires d'événements
         globeVideo.addEventListener('ended', function() {
             console.log('Vidéo texture terminée - relancement immédiat');
             this.currentTime = 0;
@@ -725,31 +916,35 @@ function fixVideos() {
         console.error('Vidéo texture non trouvée');
     }
     
-    // Vidéo du documentaire avec bouton de lecture et contrôles au survol UNIQUEMENT
+    // Vidéo du documentaire - Adaptée tactile
     const docVideo = document.querySelector('.main-video');
     const videoContainer = document.querySelector('.video-container');
     const playButton = document.querySelector('.video-play-button');
     
     if (docVideo && playButton) {
-        // Masquer les contrôles par défaut et les afficher uniquement au survol
-        docVideo.controls = false; // Désactiver les contrôles par défaut
+        // Masquer les contrôles par défaut
+        docVideo.controls = false;
         
-        // Afficher les contrôles au survol uniquement
-        videoContainer.addEventListener('mouseenter', function() {
-            docVideo.controls = true;
-            if (docVideo.paused) {
-                playButton.style.opacity = '1';
-            }
-        });
+        // Afficher les contrôles au survol sur desktop seulement
+        if (window.innerWidth >= 1025 && !('ontouchstart' in window)) {
+            videoContainer.addEventListener('mouseenter', function() {
+                docVideo.controls = true;
+                if (docVideo.paused) {
+                    playButton.style.opacity = '1';
+                }
+            });
+            
+            videoContainer.addEventListener('mouseleave', function() {
+                docVideo.controls = false;
+                if (docVideo.paused) {
+                    playButton.style.opacity = '0';
+                }
+            });
+        }
         
-        videoContainer.addEventListener('mouseleave', function() {
-            docVideo.controls = false; // Masquer les contrôles quand on sort de la zone
-            if (docVideo.paused) {
-                playButton.style.opacity = '0';
-            }
-        });
-        
-        playButton.addEventListener('click', function() {
+        // Gestion du bouton play adapté tactile
+        playButton.addEventListener('click', function(e) {
+            e.preventDefault();
             showGlobalLoader();
             
             if (docVideo.paused) {
@@ -762,6 +957,10 @@ function fixVideos() {
                             </svg>
                         `;
                         videoContainer.classList.add('playing');
+                        // Sur mobile/tablette, afficher les contrôles
+                        if (window.innerWidth < 1025) {
+                            docVideo.controls = true;
+                        }
                         setTimeout(() => {
                             playButton.style.opacity = '0';
                         }, 500);
@@ -780,6 +979,7 @@ function fixVideos() {
                 `;
                 videoContainer.classList.remove('playing');
                 playButton.style.opacity = '1';
+                docVideo.controls = false;
             }
         });
         
@@ -804,10 +1004,7 @@ function fixVideos() {
             }
         });
         
-        docVideo.addEventListener('click', function(e) {
-            e.stopPropagation();
-        });
-        
+        // Bouton doc pour lancer la vidéo
         const docButton = document.querySelector('.doc-button');
         if (docButton) {
             docButton.addEventListener('click', function(e) {
@@ -826,6 +1023,9 @@ function fixVideos() {
                                     <path d="M14,19H18V5H14M6,19H10V5H6V19Z"></path>
                                 </svg>
                             `;
+                            if (window.innerWidth < 1025) {
+                                docVideo.controls = true;
+                            }
                             setTimeout(() => {
                                 playButton.style.opacity = '0';
                             }, 500);
@@ -840,14 +1040,15 @@ function fixVideos() {
     }
 }
 
-// Initialisation des boutons de partage - Mêmes conditions que back-to-top
+// Boutons de partage - Adaptés tactile
 function initShareButtons() {
     const shareButton = document.querySelector('.share-button');
     const shareIcon = document.querySelector('.share-icon');
     const shareOptions = document.querySelector('.share-options');
     const shareOptionLinks = document.querySelectorAll('.share-option');
     
-    // Variables pour le suivi du survol
+    if (!shareButton || !shareIcon || !shareOptions) return;
+    
     let isOverShareArea = false;
     
     // Apparition avec les mêmes conditions que back-to-top
@@ -859,36 +1060,51 @@ function initShareButtons() {
         }
     });
     
-    // Gérer le survol du bouton principal
-    shareButton.addEventListener('mouseenter', function() {
-        isOverShareArea = true;
-        shareOptions.classList.add('visible');
-    });
-    
-    shareButton.addEventListener('mouseleave', function() {
-        isOverShareArea = false;
-        setTimeout(() => {
-            if (!isOverShareArea) {
+    // Gestion différente selon le type d'appareil
+    if ('ontouchstart' in window) {
+        // Sur tactile, toggle au clic
+        shareIcon.addEventListener('click', function(e) {
+            e.preventDefault();
+            shareOptions.classList.toggle('visible');
+        });
+        
+        // Fermer en cliquant ailleurs
+        document.addEventListener('click', function(e) {
+            if (!shareButton.contains(e.target)) {
                 shareOptions.classList.remove('visible');
             }
-        }, 300);
-    });
+        });
+    } else {
+        // Sur desktop, au survol
+        shareButton.addEventListener('mouseenter', function() {
+            isOverShareArea = true;
+            shareOptions.classList.add('visible');
+        });
+        
+        shareButton.addEventListener('mouseleave', function() {
+            isOverShareArea = false;
+            setTimeout(() => {
+                if (!isOverShareArea) {
+                    shareOptions.classList.remove('visible');
+                }
+            }, 300);
+        });
+        
+        shareOptions.addEventListener('mouseenter', function() {
+            isOverShareArea = true;
+        });
+        
+        shareOptions.addEventListener('mouseleave', function() {
+            isOverShareArea = false;
+            setTimeout(() => {
+                if (!isOverShareArea) {
+                    shareOptions.classList.remove('visible');
+                }
+            }, 300);
+        });
+    }
     
-    // Gérer le survol des options de partage
-    shareOptions.addEventListener('mouseenter', function() {
-        isOverShareArea = true;
-    });
-    
-    shareOptions.addEventListener('mouseleave', function() {
-        isOverShareArea = false;
-        setTimeout(() => {
-            if (!isOverShareArea) {
-                shareOptions.classList.remove('visible');
-            }
-        }, 300);
-    });
-    
-    // Gérer les clics sur les options de partage
+    // Gestion du partage
     shareOptionLinks.forEach(option => {
         option.addEventListener('click', function(e) {
             e.preventDefault();
@@ -912,8 +1128,15 @@ function initShareButtons() {
                     shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${url}`;
                     break;
                 case 'instagram':
-                    shareUrl = `https://www.instagram.com/`;
-                    break;
+                    // Instagram ne permet pas le partage direct par URL
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(window.location.href);
+                        alert('Lien copié ! Collez-le dans votre post Instagram.');
+                    } else {
+                        alert('Copiez le lien manuellement pour le partager sur Instagram: ' + window.location.href);
+                    }
+                    hideGlobalLoader();
+                    return;
             }
             
             if (shareUrl) {
@@ -928,7 +1151,7 @@ function initShareButtons() {
     });
 }
 
-// Animation des liens de navigation
+// Animation des liens de navigation - INCHANGÉ
 function animateNavLinks() {
     const navLinks = document.querySelectorAll('.nav-link');
     
@@ -942,9 +1165,16 @@ function animateNavLinks() {
             const targetElement = document.querySelector(targetId);
             
             if (targetElement) {
-                targetElement.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
+                // Fermer le menu mobile si ouvert
+                if (window.innerWidth < 1025 && isMenuOpen) {
+                    closeMenu();
+                }
+                
+                const offsetTop = targetElement.offsetTop - (window.innerWidth < 768 ? 80 : 0);
+                
+                window.scrollTo({
+                    top: offsetTop,
+                    behavior: 'smooth'
                 });
                 
                 setTimeout(() => {
@@ -957,48 +1187,60 @@ function animateNavLinks() {
     });
 }
 
-// Stocke la dernière position de défilement pour déterminer la direction
-let lastScrollTop = 0;
-
-// Animations au défilement (dans les deux sens)
+// Animations au défilement - Optimisées performances mobile
 function initAnimations() {
     const elementsToAnimate = document.querySelectorAll('[data-animation], .video-section, .expedition-image, .stat-card, .scientific-image-wrapper, .resource-card, .credits-col, .section-title, .description');
     
-    const observer = new IntersectionObserver((entries, observer) => {
+    const observerOptions = {
+        root: null,
+        rootMargin: '0px 0px -50px 0px',
+        threshold: 0.15
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
-            const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            const isScrollingDown = currentScrollTop > lastScrollTop;
-            lastScrollTop = currentScrollTop;
-            
             if (entry.isIntersecting) {
                 entry.target.classList.add('visible');
                 entry.target.classList.remove('will-change');
+                
+                // Désactiver l'observation une fois l'animation déclenchée pour optimiser les performances
+                observer.unobserve(entry.target);
             } else {
                 entry.target.classList.add('will-change');
                 entry.target.classList.remove('visible');
             }
         });
-    }, {
-        root: null,
-        rootMargin: '0px',
-        threshold: 0.15
-    });
+    }, observerOptions);
     
     elementsToAnimate.forEach(element => {
         observer.observe(element);
     });
     
-    document.addEventListener("scroll", throttle(function() {
-        checkVisibleElements();
-    }, 100));
+    // Vérification initiale
+    checkVisibleElements();
     
-    window.addEventListener('load', function() {
+    // Throttled scroll pour les performances
+    let ticking = false;
+    function updateElements() {
         checkVisibleElements();
+        ticking = false;
+    }
+    
+    document.addEventListener("scroll", function() {
+        if (!ticking) {
+            requestAnimationFrame(updateElements);
+            ticking = true;
+        }
     });
 }
 
-// Curseur personnalisé amélioré - Garantit le z-index maximum partout
+// Curseur personnalisé UNIQUEMENT sur desktop avec souris
 function initCustomCursor() {
+    // Vérifier si c'est vraiment un appareil avec souris
+    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+        return; // Ne pas initialiser sur tactile
+    }
+    
     const cursor = document.createElement('div');
     cursor.classList.add('cursor');
     
@@ -1010,7 +1252,6 @@ function initCustomCursor() {
     
     let isOverImage = false;
     
-    // Mise à jour de la position du curseur
     document.addEventListener('mousemove', (e) => {
         cursor.style.left = e.clientX + 'px';
         cursor.style.top = e.clientY + 'px';
@@ -1020,7 +1261,6 @@ function initCustomCursor() {
             follower.style.top = e.clientY + 'px';
         }, 30);
         
-        // Vérifier si on survole une vidéo ou une image
         const element = document.elementFromPoint(e.clientX, e.clientY);
         if (element) {
             const isVideo = element.tagName === 'VIDEO' || element.closest('video');
@@ -1046,8 +1286,7 @@ function initCustomCursor() {
         }
     });
     
-    // Effets au survol des liens et boutons
-    const interactiveElements = document.querySelectorAll('a, button, .nav-link, .share-icon, .back-to-top, .video-play-button, .gallery-arrow, .gallery-dot, .fullscreen-close, .gallery-image-container, .return-exploration');
+    const interactiveElements = document.querySelectorAll('a, button, .nav-link, .share-icon, .back-to-top, .video-play-button, .gallery-arrow, .gallery-dot, .gallery-image-container, .return-exploration');
     
     interactiveElements.forEach(el => {
         el.addEventListener('mouseenter', () => {
@@ -1062,35 +1301,9 @@ function initCustomCursor() {
             follower.classList.remove('hover');
         });
     });
-    
-    // Mise à jour dynamique pour les éléments ajoutés après coup
-    const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            mutation.addedNodes.forEach((node) => {
-                if (node.nodeType === 1) {
-                    const newInteractiveElements = node.querySelectorAll('a, button, .nav-link, .share-icon, .back-to-top, .video-play-button, .gallery-arrow, .gallery-dot, .fullscreen-close, .gallery-image-container, .return-exploration');
-                    newInteractiveElements.forEach(el => {
-                        el.addEventListener('mouseenter', () => {
-                            if (!isOverImage) {
-                                cursor.classList.add('hover');
-                                follower.classList.add('hover');
-                            }
-                        });
-                        
-                        el.addEventListener('mouseleave', () => {
-                            cursor.classList.remove('hover');
-                            follower.classList.remove('hover');
-                        });
-                    });
-                }
-            });
-        });
-    });
-    
-    observer.observe(document.body, { childList: true, subtree: true });
 }
 
-// Vérifie quels éléments sont visibles et les anime
+// Vérifier les éléments visibles
 function checkVisibleElements() {
     const elementsToCheck = document.querySelectorAll('.will-change, [data-animation]:not(.visible), .video-section:not(.visible), .expedition-image:not(.visible), .stat-card:not(.visible), .scientific-image-wrapper:not(.visible), .resource-card:not(.visible), .credits-col:not(.visible), .section-title:not(.visible), .description:not(.visible)');
     
@@ -1102,7 +1315,39 @@ function checkVisibleElements() {
     });
 }
 
-// Afficher le loader lors du chargement des pages
+// Vérifier si un élément est dans la zone visible
+function isElementInViewport(el) {
+    const rect = el.getBoundingClientRect();
+    return (
+        rect.top < window.innerHeight * 0.85 && 
+        rect.bottom > 0
+    );
+}
+
+// Prévenir le zoom sur double-tap (iOS)
+let lastTouchEnd = 0;
+document.addEventListener('touchend', function(event) {
+    const now = (new Date()).getTime();
+    if (now - lastTouchEnd <= 300) {
+        event.preventDefault();
+    }
+    lastTouchEnd = now;
+}, false);
+
+// Gestion des changements d'orientation
+window.addEventListener('orientationchange', function() {
+    setTimeout(() => {
+        // Recalculer les positions après changement d'orientation
+        window.scrollTo(window.scrollX, window.scrollY);
+        
+        // Réinitialiser la galerie si nécessaire
+        if (document.querySelector('.gallery-track')) {
+            initGallery();
+        }
+    }, 100);
+});
+
+// Affichage du loader lors du chargement des pages - INCHANGÉ
 window.addEventListener('load', function() {
     const loader = document.querySelector('.loader');
     if (loader && !loader.classList.contains('hidden')) {
@@ -1114,26 +1359,3 @@ window.addEventListener('load', function() {
         }, 800);
     }
 });
-
-// Vérifie si un élément est dans la zone visible
-function isElementInViewport(el) {
-    const rect = el.getBoundingClientRect();
-    return (
-        rect.top < window.innerHeight * 0.85 && 
-        rect.bottom > 0
-    );
-}
-
-// Fonction throttle pour limiter la fréquence d'exécution
-function throttle(callback, limit) {
-    let waiting = false;
-    return function() {
-        if (!waiting) {
-            callback.apply(this, arguments);
-            waiting = true;
-            setTimeout(function() {
-                waiting = false;
-            }, limit);
-        }
-    };
-}
