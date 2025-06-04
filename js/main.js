@@ -1,626 +1,4 @@
-// JavaScript principal avec support tactile et responsive
-// Variables globales
-let currentGalleryIndex = 0;
-let touchStartX = 0;
-let touchEndX = 0;
-let isMenuOpen = false;
-
-document.addEventListener("DOMContentLoaded", function() {
-    console.log('=== DEMARRAGE APPLICATION MOBILE/TACTILE ===');
-    
-    // Détection du type d'appareil
-    const isMobile = window.innerWidth < 768;
-    const isTablet = window.innerWidth >= 768 && window.innerWidth < 1025;
-    const isDesktop = window.innerWidth >= 1025;
-    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    
-    // *** NOUVEAU LOADER AVEC L-JELLY VISIBLE ***
-    document.body.classList.add('loading');
-    
-    // Créer le nouveau loader avec l-jelly - comme dans app.js
-    const customLoader = document.createElement('div');
-    customLoader.className = 'custom-loader';
-    customLoader.style.cssText = `
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 100% !important;
-        height: 100% !important;
-        background-color: #000 !important;
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
-        z-index: 999999 !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-        transition: opacity 0.8s ease !important;
-    `;
-    
-    // Enregistrer l-jelly si nécessaire (comme dans app.js)
-    if (window.jelly && window.jelly.register) {
-        window.jelly.register();
-    }
-    
-    // Créer l'élément l-jelly comme dans app.js
-    const jellyLoader = document.createElement('l-jelly');
-    jellyLoader.setAttribute('size', '60');
-    jellyLoader.setAttribute('speed', '1.2');
-    jellyLoader.setAttribute('color', '#ffcc00');
-    jellyLoader.style.cssText = `
-        display: block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-    `;
-    
-    customLoader.appendChild(jellyLoader);
-    document.body.appendChild(customLoader);
-    
-    console.log('Loader l-jelly créé et affiché');
-    
-    // Force le retour en haut
-    history.scrollRestoration = 'manual';
-    window.scrollTo(0, 0);
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
-    
-    // LANCER LA VIDÉO IMMÉDIATEMENT
-    startGlobeVideoImmediately();
-    
-    // MASQUER LE LOADER APRÈS 2 SECONDES ET RÉVÉLER LE SITE
-    setTimeout(() => {
-        console.log('=== MASQUAGE DU LOADER ET RÉVÉLATION DU SITE ===');
-        
-        // Transition fluide du loader
-        customLoader.style.opacity = '0';
-        
-        setTimeout(() => {
-            customLoader.remove();
-            document.body.classList.remove('loading');
-            
-            // Initialiser le curseur personnalisé UNIQUEMENT sur desktop avec souris
-            if (isDesktop && !isTouchDevice) {
-                initCustomCursor();
-                console.log('Curseur personnalisé initialisé pour desktop');
-            }
-            
-            console.log('Site révélé, vidéo active');
-        }, 800);
-        
-    }, 2000);
-    
-    // Masquer l'ancien loader s'il existe
-    const oldLoader = document.querySelector('.loader');
-    if (oldLoader) {
-        oldLoader.style.display = 'none';
-    }
-    
-    // Initialiser toutes les fonctionnalités
-    initGlobalLoader();
-    initMobileMenu();
-    initAnimations();
-    initSideNav();
-    initBackToTop();
-    initShareButtons();
-    fixVideos();
-    initLogoClick();
-    initGallery();
-    initReturnExploration();
-    animateNavLinks();
-    
-    // Gestion du redimensionnement
-    window.addEventListener('resize', handleResize);
-    
-    function handleResize() {
-        const newIsMobile = window.innerWidth < 768;
-        const newIsTablet = window.innerWidth >= 768 && window.innerWidth < 1025;
-        
-        // Fermer le menu mobile si on passe à desktop
-        if (window.innerWidth >= 1025 && isMenuOpen) {
-            closeMenu();
-        }
-        
-        // Réinitialiser la galerie si nécessaire
-        if ((isMobile && !newIsMobile) || (!isMobile && newIsMobile)) {
-            initGallery();
-        }
-    }
-    
-    // Force le retour en haut lors du rechargement
-    window.addEventListener('beforeunload', function() {
-        window.scrollTo(0, 0);
-    });
-    
-    setTimeout(() => {
-        window.scrollTo(0, 0);
-    }, 100);
-    
-    console.log('=== INITIALISATION TERMINEE ===');
-    console.log('Type d\'appareil:', { isMobile, isTablet, isDesktop, isTouchDevice });
-});
-
-// Nouvelle fonction pour lancer la vidéo immédiatement
-function startGlobeVideoImmediately() {
-    const globeVideo = document.querySelector('.globe-video');
-    if (globeVideo) {
-        console.log('>>> LANCEMENT IMMÉDIAT DE LA VIDÉO TEXTURE <<<');
-        
-        globeVideo.muted = true;
-        globeVideo.loop = true;
-        globeVideo.playsInline = true;
-        globeVideo.autoplay = true;
-        
-        // Révéler la vidéo progressivement
-        globeVideo.style.opacity = '0';
-        globeVideo.style.transition = 'opacity 1.5s ease';
-        
-        const playVideo = async function() {
-            try {
-                await globeVideo.play();
-                console.log("Vidéo texture lancée immédiatement");
-                
-                // Révéler la vidéo après le début de lecture
-                setTimeout(() => {
-                    globeVideo.style.opacity = '1';
-                }, 500);
-                
-            } catch (error) {
-                console.log("Erreur lecture vidéo:", error);
-                setTimeout(async () => {
-                    try {
-                        await globeVideo.play();
-                        console.log("Vidéo texture - 2ème tentative réussie");
-                        globeVideo.style.opacity = '1';
-                    } catch (e) {
-                        console.log("Vidéo texture - 2ème tentative échouée");
-                    }
-                }, 1000);
-            }
-        };
-        
-        // Lancer immédiatement
-        if (globeVideo.readyState >= 2) {
-            playVideo();
-        } else {
-            globeVideo.addEventListener('canplay', playVideo, { once: true });
-        }
-        
-        // Surveillance continue
-        setInterval(() => {
-            if (globeVideo.paused && !document.body.classList.contains('loading')) {
-                console.log("Vidéo s'est arrêtée - relancement...");
-                globeVideo.play().catch(e => console.log("Erreur relancement:", e));
-            }
-        }, 3000);
-    }
-}
-
-// Force le retour en haut au chargement
-window.addEventListener('load', function() {
-    setTimeout(() => {
-        window.scrollTo(0, 0);
-        document.documentElement.scrollTop = 0;
-        document.body.scrollTop = 0;
-    }, 50);
-});
-
-// Initialisation du menu mobile/tablette
-function initMobileMenu() {
-    console.log('=== INITIALISATION MENU MOBILE ===');
-    
-    const menuToggle = document.querySelector('.mobile-menu-toggle');
-    const sideNav = document.querySelector('.side-nav');
-    const menuOverlay = document.querySelector('.menu-overlay');
-    const navLinks = document.querySelectorAll('.nav-link');
-    
-    if (!menuToggle || !sideNav || !menuOverlay) {
-        console.error('Éléments du menu mobile manquants');
-        return;
-    }
-    
-    // Afficher le bouton hamburger après la section hero
-    window.addEventListener('scroll', function() {
-        const heroHeight = document.querySelector('#hero').offsetHeight;
-        if (window.scrollY > heroHeight * 0.8) {
-            menuToggle.classList.add('visible');
-        } else {
-            menuToggle.classList.remove('visible');
-        }
-    });
-    
-    // Toggle du menu
-    menuToggle.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        if (isMenuOpen) {
-            closeMenu();
-        } else {
-            openMenu();
-        }
-    });
-    
-    // Fermer le menu en cliquant sur l'overlay
-    menuOverlay.addEventListener('click', closeMenu);
-    
-    // Fermer le menu en cliquant sur un lien
-    navLinks.forEach(link => {
-        link.addEventListener('click', function() {
-            if (window.innerWidth < 1025) {
-                closeMenu();
-            }
-        });
-    });
-    
-    // Fonctions d'ouverture/fermeture du menu
-    window.openMenu = openMenu;
-    window.closeMenu = closeMenu;
-    
-    function openMenu() {
-        sideNav.classList.add('open');
-        menuOverlay.classList.add('active');
-        menuToggle.classList.add('active');
-        document.body.style.overflow = 'hidden';
-        isMenuOpen = true;
-        console.log('Menu ouvert');
-    }
-    
-    function closeMenu() {
-        sideNav.classList.remove('open');
-        menuOverlay.classList.remove('active');
-        menuToggle.classList.remove('active');
-        document.body.style.overflow = '';
-        isMenuOpen = false;
-        console.log('Menu fermé');
-    }
-    
-    // Fermer le menu avec la touche Escape
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && isMenuOpen) {
-            closeMenu();
-        }
-    });
-}
-
-// Initialisation du bouton "retour à l'exploration" - AVEC ANIMATION DYNAMIQUE
-function initReturnExploration() {
-    console.log('=== INITIALISATION BOUTON RETOUR EXPLORATION ===');
-    
-    const returnBtn = document.querySelector('.return-exploration');
-    console.log('Bouton trouvé:', returnBtn);
-    
-    if (!returnBtn) {
-        console.error('ERREUR: Bouton retour à l\'exploration non trouvé dans le DOM');
-        return;
-    }
-    
-    const expeditionSection = document.querySelector('#expedition');
-    console.log('Section expédition trouvée:', expeditionSection);
-    
-    if (!expeditionSection) {
-        console.error('ERREUR: Section expédition non trouvée');
-        return;
-    }
-    
-    // Variable locale pour éviter les conflits
-    let expeditionVisited = false;
-    
-    // Observer pour détecter la visite de l'expédition
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            console.log('Observer déclenché - isIntersecting:', entry.isIntersecting);
-            console.log('Intersection ratio:', entry.intersectionRatio);
-            
-            if (entry.isIntersecting && entry.intersectionRatio >= 0.5 && !expeditionVisited) {
-                expeditionVisited = true;
-                console.log('>>> EXPEDITION VRAIMENT VISITEE (50%) - AFFICHAGE DU BOUTON <<<');
-                
-                returnBtn.style.opacity = '1';
-                returnBtn.style.pointerEvents = 'all';
-                returnBtn.style.transform = 'translateY(0)';
-                returnBtn.classList.add('visible');
-                
-                console.log('Bouton affiché - styles appliqués');
-            }
-        });
-    }, {
-        threshold: 0.5,
-        rootMargin: '-100px 0px -100px 0px'
-    });
-    
-    observer.observe(expeditionSection);
-    console.log('Observer attaché avec seuil 50%');
-    
-    // NOUVEAU: Animation dynamique quand on est en haut du site
-    window.addEventListener('scroll', function() {
-        if (returnBtn.classList.contains('visible')) {
-            if (window.scrollY < 100) {
-                // En haut du site - animation pulse
-                returnBtn.classList.add('at-top');
-            } else {
-                // Pas en haut - retour normal
-                returnBtn.classList.remove('at-top');
-            }
-        }
-    });
-    
-    // Gestion du clic - REDIRECTION VERS LOCALHOST
-    returnBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        console.log('>>> CLIC SUR BOUTON RETOUR EXPLORATION - REDIRECTION IMMÉDIATE <<<');
-        
-        // Animation de clic
-        returnBtn.style.transform = 'scale(0.95)';
-        setTimeout(() => {
-            window.location.href = 'http://localhost:3000/';
-        }, 150);
-    });
-    
-    console.log('=== FIN INITIALISATION BOUTON ===');
-}
-
-// Initialisation du loader global
-function initGlobalLoader() {
-    let globalLoader = document.querySelector('.global-loader');
-    if (!globalLoader) {
-        globalLoader = document.createElement('div');
-        globalLoader.className = 'global-loader';
-        globalLoader.innerHTML = `
-            <div class="loader-content">
-                <l-jelly size="40" speed="0.9" color="#ffdd00"></l-jelly>
-            </div>
-        `;
-        document.body.appendChild(globalLoader);
-    }
-    
-    window.showGlobalLoader = function() {
-        globalLoader.classList.add('active');
-    };
-    
-    window.hideGlobalLoader = function() {
-        globalLoader.classList.remove('active');
-    };
-    
-    // Loader pour les navigations internes
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function(e) {
-            showGlobalLoader();
-            setTimeout(() => {
-                hideGlobalLoader();
-            }, 800);
-        });
-    });
-    
-    window.addEventListener('beforeunload', function() {
-        showGlobalLoader();
-    });
-}
-
-// Initialisation de la galerie avec support tactile
-function initGallery() {
-    console.log('=== INITIALISATION GALERIE TACTILE ===');
-    
-    loadGalleryImages();
-    
-    const galleryTrack = document.querySelector('.gallery-track');
-    const dots = document.querySelectorAll('.gallery-dot');
-    const prevBtn = document.querySelector('.gallery-prev');
-    const nextBtn = document.querySelector('.gallery-next');
-    let isFullscreenMode = false;
-    let autoplayInterval;
-    
-    if (!galleryTrack) {
-        console.error('Galerie non trouvée');
-        return;
-    }
-    
-    // Créer l'élément pour le mode plein écran
-    let fullscreenMode = document.querySelector('.fullscreen-mode');
-    if (!fullscreenMode) {
-        fullscreenMode = document.createElement('div');
-        fullscreenMode.className = 'fullscreen-mode';
-        fullscreenMode.innerHTML = `
-            <img src="" alt="Image en plein écran" class="fullscreen-image">
-        `;
-        document.body.appendChild(fullscreenMode);
-    }
-    
-    const fsImage = fullscreenMode.querySelector('.fullscreen-image');
-    
-    // Fonction pour afficher une slide spécifique
-    function showSlide(index) {
-        const slides = document.querySelectorAll('.gallery-slide');
-        if (!slides.length) return;
-        
-        if (index >= slides.length) index = 0;
-        if (index < 0) index = slides.length - 1;
-        
-        slides.forEach(slide => {
-            slide.classList.remove('active');
-            slide.classList.remove('transitioning');
-        });
-        
-        slides[index].classList.add('active');
-        slides[index].classList.add('transitioning');
-        
-        const updatedDots = document.querySelectorAll('.gallery-dot');
-        updatedDots.forEach(dot => dot.classList.remove('active'));
-        if (updatedDots[index]) {
-            updatedDots[index].classList.add('active');
-        }
-        
-        currentGalleryIndex = index;
-        console.log('Slide active:', index);
-    }
-    
-    // Navigation par boutons
-    if (prevBtn) {
-        prevBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            showSlide(currentGalleryIndex - 1);
-        });
-    }
-    
-    if (nextBtn) {
-        nextBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            showSlide(currentGalleryIndex + 1);
-        });
-    }
-    
-    // Navigation par dots
-    function initDots() {
-        const dots = document.querySelectorAll('.gallery-dot');
-        dots.forEach((dot, index) => {
-            dot.addEventListener('click', (e) => {
-                e.preventDefault();
-                showSlide(index);
-            });
-        });
-    }
-    
-    // Support tactile pour le swipe
-    if ('ontouchstart' in window) {
-        galleryTrack.addEventListener('touchstart', handleTouchStart, { passive: true });
-        galleryTrack.addEventListener('touchmove', handleTouchMove, { passive: true });
-        galleryTrack.addEventListener('touchend', handleTouchEnd, { passive: true });
-    }
-    
-    function handleTouchStart(e) {
-        touchStartX = e.touches[0].clientX;
-    }
-    
-    function handleTouchMove(e) {
-        if (!touchStartX) return;
-        touchEndX = e.touches[0].clientX;
-    }
-    
-    function handleTouchEnd(e) {
-        if (!touchStartX || !touchEndX) return;
-        
-        const difference = touchStartX - touchEndX;
-        const threshold = 50; // Seuil minimum pour déclencher le swipe
-        
-        if (Math.abs(difference) > threshold) {
-            if (difference > 0) {
-                // Swipe vers la gauche - image suivante
-                showSlide(currentGalleryIndex + 1);
-            } else {
-                // Swipe vers la droite - image précédente
-                showSlide(currentGalleryIndex - 1);
-            }
-        }
-        
-        touchStartX = 0;
-        touchEndX = 0;
-    }
-    
-    // Mode plein écran
-    function activateFullscreenMode(imgSrc) {
-        showGlobalLoader();
-        
-        fsImage.src = imgSrc;
-        fsImage.onload = function() {
-            hideGlobalLoader();
-            fullscreenMode.classList.add('active');
-            isFullscreenMode = true;
-            stopAutoplay();
-            document.body.style.overflow = 'hidden';
-        };
-    }
-    
-    function deactivateFullscreenMode() {
-        fullscreenMode.classList.remove('active');
-        isFullscreenMode = false;
-        startAutoplay();
-        document.body.style.overflow = '';
-    }
-    
-    // Fermer le mode plein écran par clic sur le fond
-    fullscreenMode.addEventListener('click', function(e) {
-        if (e.target === fullscreenMode) {
-            deactivateFullscreenMode();
-        }
-    });
-    
-    // Navigation en mode plein écran
-    if ('ontouchstart' in window) {
-        fsImage.addEventListener('touchstart', handleTouchStart, { passive: true });
-        fsImage.addEventListener('touchmove', handleTouchMove, { passive: true });
-        fsImage.addEventListener('touchend', function(e) {
-            handleTouchEnd(e);
-            // Mettre à jour l'image en plein écran
-            const currentSlide = document.querySelector('.gallery-slide.active');
-            const currentImg = currentSlide.querySelector('.gallery-image');
-            if (currentImg) {
-                showGlobalLoader();
-                fsImage.src = currentImg.src;
-                fsImage.onload = function() {
-                    hideGlobalLoader();
-                };
-            }
-        }, { passive: true });
-    } else {
-        // Navigation par clic sur desktop
-        fsImage.addEventListener('click', function(e) {
-            e.stopPropagation();
-            showSlide(currentGalleryIndex + 1);
-            
-            showGlobalLoader();
-            const currentSlide = document.querySelector('.gallery-slide.active');
-            const currentImg = currentSlide.querySelector('.gallery-image');
-            fsImage.src = currentImg.src;
-            fsImage.onload = function() {
-                hideGlobalLoader();
-            };
-        });
-    }
-    
-    // Ajouter des écouteurs pour les clics sur les images
-    function initImageClicks() {
-        const imageContainers = document.querySelectorAll('.gallery-image-container');
-        imageContainers.forEach(container => {
-            container.addEventListener('click', function(e) {
-                e.preventDefault();
-                const img = this.querySelector('.gallery-image');
-                if (img) {
-                    activateFullscreenMode(img.src);
-                }
-            });
-        });
-    }
-    
-    // Défilement automatique (seulement sur desktop)
-    function startAutoplay() {
-        if (window.innerWidth >= 1025 && !('ontouchstart' in window)) {
-            autoplayInterval = setInterval(() => {
-                if (!isFullscreenMode) {
-                    const gallerySection = document.querySelector('#gallery');
-                    const rect = gallerySection.getBoundingClientRect();
-                    
-                    if (rect.top <= 0 && rect.bottom >= window.innerHeight / 2) {
-                        showSlide(currentGalleryIndex + 1);
-                    }
-                }
-            }, 8000);
-        }
-    }
-    
-    function stopAutoplay() {
-        clearInterval(autoplayInterval);
-    }
-    
-    // Gestion des touches clavier
-    document.addEventListener('keydown', e => {
-        if (isFullscreenMode) {
-            if (e.key === 'Escape') {
-                deactivateFullscreenMode();
-            } else if (e.key === 'ArrowLeft') {
-                showSlide(currentGalleryIndex - 1);
-                const currentSlide = document.querySelector('.gallery-slide.active');
-                const currentImg = currentSlide.querySelector('.gallery-image');
-                if (currentImg) {
-                    showGlobalLoader();
-                    fsImage.src = currentImg.src;
+fsImage.src = currentImg.src;
                     fsImage.onload = () => hideGlobalLoader();
                 }
             } else if (e.key === 'ArrowRight') {
@@ -1359,3 +737,1267 @@ window.addEventListener('load', function() {
         }, 800);
     }
 });
+
+// ================================================================
+// NOUVEAU CODE RESPONSIVE AJOUTÉ - CONSERVE TOUT LE CODE ORIGINAL
+// ================================================================
+
+// Variables globales responsive ajoutées
+let currentDeviceType = 'mobile'; // 'mobile', 'tablet', 'desktop'
+
+// NOUVELLE FONCTION - Détection intelligente du type d'appareil
+function detectDeviceType() {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    const isTouchCapable = isTouchDeviceResponsive();
+    
+    if (width < 768) {
+        currentDeviceType = 'mobile';
+    } else if (width >= 768 && width <= 1024) {
+        currentDeviceType = 'tablet';
+    } else {
+        currentDeviceType = 'desktop';
+    }
+    
+    // Ajustements selon les capacités tactiles
+    if (isTouchCapable && currentDeviceType === 'desktop') {
+        currentDeviceType = 'tablet'; // Surface Pro, etc.
+    }
+    
+    console.log(`Appareil détecté: ${currentDeviceType} (${width}x${height})`);
+    
+    // Appliquer les classes CSS correspondantes
+    document.body.className = document.body.className.replace(/device-\w+/g, '');
+    document.body.classList.add(`device-${currentDeviceType}`);
+    
+    return currentDeviceType;
+}
+
+// FONCTION AMÉLIORÉE - Détection tactile précise
+function isTouchDeviceResponsive() {
+    return 'ontouchstart' in window || 
+           navigator.maxTouchPoints > 0 || 
+           navigator.msMaxTouchPoints > 0 ||
+           (window.DocumentTouch && document instanceof DocumentTouch);
+}
+
+// FONCTION REFONTE - Menu mobile/tablette responsive
+function initResponsiveMobileMenu() {
+    console.log('=== INITIALISATION MENU RESPONSIVE ===');
+    
+    const menuToggle = document.querySelector('.mobile-menu-toggle');
+    const sideNav = document.querySelector('.side-nav');
+    const menuOverlay = document.querySelector('.menu-overlay');
+    const navLinks = document.querySelectorAll('.nav-link');
+    
+    if (!menuToggle || !sideNav || !menuOverlay) {
+        console.error('Éléments du menu responsive manquants');
+        return;
+    }
+    
+    // Gestion de l'affichage du bouton selon le scroll et l'appareil
+    let lastScrollY = 0;
+    window.addEventListener('scroll', function() {
+        const currentScrollY = window.scrollY;
+        const heroHeight = document.querySelector('#hero')?.offsetHeight || 500;
+        
+        // Affichage adapté selon l'appareil
+        if (currentDeviceType === 'mobile' || currentDeviceType === 'tablet') {
+            if (currentScrollY > heroHeight * 0.6) {
+                menuToggle.classList.add('visible');
+            } else {
+                menuToggle.classList.remove('visible');
+            }
+        }
+        
+        lastScrollY = currentScrollY;
+    });
+    
+    // Toggle du menu avec gestion tactile
+    menuToggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Feedback haptique sur mobile si disponible
+        if (navigator.vibrate && currentDeviceType === 'mobile') {
+            navigator.vibrate(50);
+        }
+        
+        if (isMenuOpen) {
+            closeMenuResponsive();
+        } else {
+            openMenuResponsive();
+        }
+    });
+    
+    // Fermer le menu en cliquant sur l'overlay
+    menuOverlay.addEventListener('click', closeMenuResponsive);
+    
+    // Fermer le menu en cliquant sur un lien
+    navLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            if (currentDeviceType === 'mobile' || currentDeviceType === 'tablet') {
+                closeMenuResponsive();
+            }
+        });
+    });
+    
+    // Gestion des swipes pour fermer le menu sur mobile
+    if (currentDeviceType === 'mobile') {
+        let touchStartX = 0;
+        sideNav.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+        }, { passive: true });
+        
+        sideNav.addEventListener('touchmove', (e) => {
+            const touchCurrentX = e.touches[0].clientX;
+            const diff = touchStartX - touchCurrentX;
+            
+            if (diff > 100) { // Swipe vers la gauche
+                closeMenuResponsive();
+            }
+        }, { passive: true });
+    }
+    
+    function openMenuResponsive() {
+        sideNav.classList.add('open');
+        menuOverlay.classList.add('active');
+        menuToggle.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        isMenuOpen = true;
+        
+        // Prévenir le scroll du body sur mobile
+        if (currentDeviceType === 'mobile') {
+            document.addEventListener('touchmove', preventBodyScroll, { passive: false });
+        }
+        
+        console.log(`Menu ${currentDeviceType} ouvert`);
+    }
+    
+    function closeMenuResponsive() {
+        sideNav.classList.remove('open');
+        menuOverlay.classList.remove('active');
+        menuToggle.classList.remove('active');
+        document.body.style.overflow = '';
+        isMenuOpen = false;
+        
+        // Réactiver le scroll du body
+        if (currentDeviceType === 'mobile') {
+            document.removeEventListener('touchmove', preventBodyScroll);
+        }
+        
+        console.log(`Menu ${currentDeviceType} fermé`);
+    }
+    
+    function preventBodyScroll(e) {
+        e.preventDefault();
+    }
+    
+    // Fermer le menu avec la touche Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && isMenuOpen) {
+            closeMenuResponsive();
+        }
+    });
+    
+    // Exposer les fonctions globalement
+    window.openMenuResponsive = openMenuResponsive;
+    window.closeMenuResponsive = closeMenuResponsive;
+}
+
+// FONCTION REFONTE - Bouton retour exploration responsive
+function initReturnExplorationResponsive() {
+    console.log('=== INITIALISATION BOUTON RETOUR RESPONSIVE ===');
+    
+    const returnBtn = document.querySelector('.return-exploration');
+    const expeditionSection = document.querySelector('#expedition');
+    
+    if (!returnBtn || !expeditionSection) {
+        console.error('Éléments bouton retour manquants');
+        return;
+    }
+    
+    let expeditionVisited = false;
+    
+    // Observer adapté selon l'appareil
+    const observerOptions = {
+        threshold: currentDeviceType === 'mobile' ? 0.3 : 0.5,
+        rootMargin: currentDeviceType === 'mobile' ? '-50px 0px -50px 0px' : '-100px 0px -100px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && !expeditionVisited) {
+                expeditionVisited = true;
+                console.log(`>>> EXPEDITION VISITÉE - AFFICHAGE BOUTON ${currentDeviceType.toUpperCase()} <<<`);
+                
+                returnBtn.classList.add('visible');
+                
+                // Animation d'apparition adaptée
+                if (currentDeviceType === 'mobile') {
+                    returnBtn.style.animation = 'slideUpBounce 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards';
+                }
+            }
+        });
+    }, observerOptions);
+    
+    observer.observe(expeditionSection);
+    
+    // Animation dynamique adaptée selon l'appareil
+    if (currentDeviceType === 'mobile') {
+        // Sur mobile, animation plus discrète
+        window.addEventListener('scroll', function() {
+            if (returnBtn.classList.contains('visible')) {
+                if (window.scrollY < 50) {
+                    returnBtn.style.transform = 'translateX(-50%) scale(1.05)';
+                } else {
+                    returnBtn.style.transform = 'translateX(-50%) scale(1)';
+                }
+            }
+        });
+    } else {
+        // Sur tablette/desktop, animation plus prononcée
+        window.addEventListener('scroll', function() {
+            if (returnBtn.classList.contains('visible')) {
+                if (window.scrollY < 100) {
+                    returnBtn.classList.add('at-top');
+                } else {
+                    returnBtn.classList.remove('at-top');
+                }
+            }
+        });
+    }
+    
+    // Gestion du clic avec feedback adapté
+    returnBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        console.log(`>>> CLIC BOUTON RETOUR ${currentDeviceType.toUpperCase()} <<<`);
+        
+        // Feedback haptique sur mobile
+        if (navigator.vibrate && currentDeviceType === 'mobile') {
+            navigator.vibrate([50, 30, 50]);
+        }
+        
+        // Animation de clic adaptée
+        const scaleValue = currentDeviceType === 'mobile' ? '0.96' : '0.95';
+        returnBtn.style.transform = currentDeviceType === 'mobile' ? 
+            `translateX(-50%) scale(${scaleValue})` : 
+            `scale(${scaleValue})`;
+        
+        setTimeout(() => {
+            window.location.href = 'http://localhost:3000/';
+        }, 150);
+    });
+    
+    // Ajout des styles d'animation pour mobile
+    if (currentDeviceType === 'mobile') {
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideUpBounce {
+                0% {
+                    opacity: 0;
+                    transform: translateX(-50%) translateY(30px) scale(0.8);
+                }
+                60% {
+                    opacity: 1;
+                    transform: translateX(-50%) translateY(-5px) scale(1.05);
+                }
+                100% {
+                    opacity: 1;
+                    transform: translateX(-50%) translateY(0) scale(1);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+}
+
+// FONCTION REFONTE - Galerie responsive complète
+function initGalleryResponsive() {
+    console.log(`=== INITIALISATION GALERIE ${currentDeviceType.toUpperCase()} ===`);
+    
+    loadGalleryImagesResponsive();
+    
+    const galleryTrack = document.querySelector('.gallery-track');
+    const dots = document.querySelectorAll('.gallery-dot');
+    const prevBtn = document.querySelector('.gallery-prev');
+    const nextBtn = document.querySelector('.gallery-next');
+    let isFullscreenMode = false;
+    let autoplayInterval;
+    
+    if (!galleryTrack) {
+        console.error('Galerie non trouvée');
+        return;
+    }
+    
+    // Configuration adaptée selon l'appareil
+    const swipeThreshold = currentDeviceType === 'mobile' ? 30 : 50;
+    const autoplayDelay = currentDeviceType === 'mobile' ? 10000 : 8000;
+    
+    // Créer le mode plein écran adaptatif
+    let fullscreenMode = document.querySelector('.fullscreen-mode');
+    if (!fullscreenMode) {
+        fullscreenMode = document.createElement('div');
+        fullscreenMode.className = 'fullscreen-mode';
+        fullscreenMode.innerHTML = `
+            <img src="" alt="Image en plein écran" class="fullscreen-image">
+        `;
+        document.body.appendChild(fullscreenMode);
+    }
+    
+    const fsImage = fullscreenMode.querySelector('.fullscreen-image');
+    
+    // Fonction pour afficher une slide avec animations adaptées
+    function showSlideResponsive(index) {
+        const slides = document.querySelectorAll('.gallery-slide');
+        if (!slides.length) return;
+        
+        if (index >= slides.length) index = 0;
+        if (index < 0) index = slides.length - 1;
+        
+        slides.forEach((slide, i) => {
+            slide.classList.remove('active', 'transitioning');
+            
+            // Animation différée selon l'appareil
+            if (i === index) {
+                setTimeout(() => {
+                    slide.classList.add('active');
+                    slide.classList.add('transitioning');
+                }, currentDeviceType === 'mobile' ? 50 : 100);
+            }
+        });
+        
+        // Mise à jour des dots
+        const updatedDots = document.querySelectorAll('.gallery-dot');
+        updatedDots.forEach((dot, i) => {
+            dot.classList.toggle('active', i === index);
+        });
+        
+        currentGalleryIndex = index;
+        console.log(`Slide active (${currentDeviceType}):`, index);
+    }
+    
+    // Navigation par boutons avec feedback adapté
+    if (prevBtn && nextBtn) {
+        prevBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (navigator.vibrate && currentDeviceType === 'mobile') {
+                navigator.vibrate(30);
+            }
+            showSlideResponsive(currentGalleryIndex - 1);
+        });
+        
+        nextBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (navigator.vibrate && currentDeviceType === 'mobile') {
+                navigator.vibrate(30);
+            }
+            showSlideResponsive(currentGalleryIndex + 1);
+        });
+    }
+    
+    // Navigation par dots adaptée
+    function initDotsResponsive() {
+        const dots = document.querySelectorAll('.gallery-dot');
+        dots.forEach((dot, index) => {
+            dot.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (navigator.vibrate && currentDeviceType === 'mobile') {
+                    navigator.vibrate(40);
+                }
+                showSlideResponsive(index);
+            });
+        });
+    }
+    
+    // Support tactile adaptatif pour le swipe
+    if (isTouchDeviceResponsive()) {
+        let touchStartTime = 0;
+        let touchStartY = 0;
+        
+        galleryTrack.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+            touchStartTime = Date.now();
+        }, { passive: true });
+        
+        galleryTrack.addEventListener('touchmove', (e) => {
+            if (!touchStartX) return;
+            touchEndX = e.touches[0].clientX;
+            
+            // Prévenir le scroll vertical accidentel
+            const touchEndY = e.touches[0].clientY;
+            const diffY = Math.abs(touchStartY - touchEndY);
+            const diffX = Math.abs(touchStartX - touchEndX);
+            
+            if (diffX > diffY && diffX > 20) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
+        galleryTrack.addEventListener('touchend', (e) => {
+            if (!touchStartX || !touchEndX) return;
+            
+            const difference = touchStartX - touchEndX;
+            const timeDiff = Date.now() - touchStartTime;
+            const velocity = Math.abs(difference) / timeDiff;
+            
+            // Seuil adaptatif selon l'appareil et la vitesse
+            const dynamicThreshold = currentDeviceType === 'mobile' ? 
+                Math.max(swipeThreshold, velocity * 20) : 
+                swipeThreshold;
+            
+            if (Math.abs(difference) > dynamicThreshold) {
+                if (navigator.vibrate && currentDeviceType === 'mobile') {
+                    navigator.vibrate(50);
+                }
+                
+                if (difference > 0) {
+                    showSlideResponsive(currentGalleryIndex + 1);
+                } else {
+                    showSlideResponsive(currentGalleryIndex - 1);
+                }
+            }
+            
+            touchStartX = 0;
+            touchEndX = 0;
+        }, { passive: true });
+    }
+    
+    // Initialiser les composants
+    setTimeout(initDotsResponsive, 500);
+    
+    // Autoplay adaptatif (seulement sur desktop et tablette en mode non-tactile)
+    if (currentDeviceType === 'desktop' || 
+        (currentDeviceType === 'tablet' && !isTouchDeviceResponsive())) {
+        setInterval(() => {
+            if (!isFullscreenMode) {
+                const gallerySection = document.querySelector('#gallery');
+                const rect = gallerySection.getBoundingClientRect();
+                
+                if (rect.top <= 0 && rect.bottom >= window.innerHeight / 2) {
+                    showSlideResponsive(currentGalleryIndex + 1);
+                }
+            }
+        }, autoplayDelay);
+    }
+}
+
+// FONCTION REFONTE - Chargement des images adaptatif
+function loadGalleryImagesResponsive() {
+    const galleryTrack = document.querySelector('.gallery-track');
+    const galleryDots = document.querySelector('.gallery-dots');
+    
+    if (!galleryTrack || !galleryDots) return;
+    
+    galleryTrack.innerHTML = '';
+    galleryDots.innerHTML = '';
+    
+    // Nombre d'images adapté selon l'appareil
+    const numImages = currentDeviceType === 'mobile' ? 8 : 10;
+    
+    // Images de base avec fallbacks
+    const imageList = [
+        { src: 'images/img-photo-gallerie-01.jpeg', title: 'Vaquita en milieu naturel', desc: 'Rare photographie d\'un marsouin du Pacifique dans le golfe de Californie.' },
+        { src: 'images/vaquita.jpeg', title: 'Observer la vaquita', desc: 'Les scientifiques utilisent des techniques avancées pour repérer ces créatures élusives.' },
+        { src: 'images/nets.jpeg', title: 'Filets de pêche illégaux', desc: 'Récupération de pièges mortels lors d\'une opération de nettoyage.' },
+        { src: 'images/expedition.jpeg', title: 'Sur les traces des braconniers', desc: 'L\'équipe d\'intervention lors d\'une mission de surveillance.' },
+        { src: 'images/img-photo-gallerie-02.jpeg', title: 'Équipe scientifique', desc: 'Les chercheurs préparent leur équipement de surveillance.' },
+        { src: 'images/img-photo-gallerie-03.jpeg', title: 'Golfe de Californie', desc: 'Vue aérienne de l\'habitat naturel de la vaquita.' },
+        { src: 'images/img-photo-gallerie-04.jpeg', title: 'Mission de nuit', desc: 'Surveillance nocturne des activités de pêche illégale.' },
+        { src: 'images/img-photo-gallerie-05.jpeg', title: 'Analyse des données', desc: 'Traitement des données acoustiques pour localiser les vaquitas.' }
+    ];
+    
+    for (let i = 0; i < Math.min(numImages, imageList.length); i++) {
+        const imageData = imageList[i] || imageList[i % imageList.length];
+        
+        const slide = document.createElement('div');
+        slide.className = 'gallery-slide' + (i === 0 ? ' active' : '');
+        
+        const imageContainer = document.createElement('div');
+        imageContainer.className = 'gallery-image-container';
+        
+        const image = document.createElement('img');
+        image.src = imageData.src;
+        image.alt = imageData.title;
+        image.className = 'gallery-image';
+        
+        // Gestion d'erreur avec fallback
+        image.onerror = function() {
+            if (i < 4) {
+                const fallbacks = ['images/vaquita.jpeg', 'images/nets.jpeg', 'images/expedition.jpeg'];
+                image.src = fallbacks[i % fallbacks.length];
+            } else {
+                slide.style.display = 'none';
+            }
+        };
+        
+        imageContainer.appendChild(image);
+        slide.appendChild(imageContainer);
+        
+        // Ajouter les informations sur mobile/tablette
+        if (currentDeviceType === 'mobile' || currentDeviceType === 'tablet') {
+            const imageInfo = document.createElement('div');
+            imageInfo.className = 'image-info';
+            imageInfo.innerHTML = `
+                <h3>${imageData.title}</h3>
+                <p>${imageData.desc}</p>
+            `;
+            slide.appendChild(imageInfo);
+        }
+        
+        galleryTrack.appendChild(slide);
+        
+        // Créer le dot correspondant
+        const dot = document.createElement('span');
+        dot.className = 'gallery-dot' + (i === 0 ? ' active' : '');
+        dot.setAttribute('data-index', i.toString());
+        galleryDots.appendChild(dot);
+    }
+}
+
+// FONCTION REFONTE - Gestion responsive du redimensionnement
+function handleResponsiveResize() {
+    const oldDeviceType = currentDeviceType;
+    detectDeviceType();
+    
+    // Si le type d'appareil a changé
+    if (oldDeviceType !== currentDeviceType) {
+        console.log(`Changement d'appareil détecté: ${oldDeviceType} → ${currentDeviceType}`);
+        
+        // Fermer le menu mobile si on passe à desktop
+        if (currentDeviceType === 'desktop' && isMenuOpen) {
+            closeMenuResponsive();
+        }
+        
+        // Réinitialiser la galerie
+        setTimeout(() => {
+            initGalleryResponsive();
+        }, 300);
+        
+        // Réinitialiser le curseur personnalisé
+        if (currentDeviceType === 'desktop' && !isTouchDeviceResponsive()) {
+            setTimeout(() => {
+                initCustomCursor();
+            }, 500);
+        }
+        
+        // Recalculer les hauteurs adaptatives
+        recalculateResponsiveHeights();
+    }
+    
+    // Recalcul des positions pour tous les cas
+    setTimeout(() => {
+        window.scrollTo(window.scrollX, window.scrollY);
+    }, 100);
+}
+
+// FONCTION REFONTE - Gestion du changement d'orientation
+function handleOrientationChange() {
+    console.log('Changement d\'orientation détecté');
+    
+    // Attendre que l'orientation soit complètement changée
+    setTimeout(() => {
+        detectDeviceType();
+        
+        // Forcer le recalcul des dimensions
+        recalculateResponsiveHeights();
+        
+        // Réinitialiser la galerie si nécessaire
+        if (document.querySelector('.gallery-track')) {
+            setTimeout(() => {
+                initGalleryResponsive();
+            }, 300);
+        }
+        
+        // Fix pour Safari iOS
+        if (navigator.userAgent.includes('Safari') && isTouchDeviceResponsive()) {
+            window.scrollTo(window.scrollX, window.scrollY);
+        }
+        
+    }, 150);
+}
+
+// NOUVELLE FONCTION - Recalcul des hauteurs adaptatives
+function recalculateResponsiveHeights() {
+    const heroSection = document.querySelector('.hero');
+    const galleryContainer = document.querySelector('.gallery-container');
+    
+    if (heroSection) {
+        // Recalcul de la hauteur du hero selon l'appareil
+        if (currentDeviceType === 'mobile') {
+            heroSection.style.height = window.innerHeight + 'px';
+        } else {
+            heroSection.style.height = '100vh';
+        }
+    }
+    
+    if (galleryContainer) {
+        // Recalcul de la hauteur de la galerie
+        const availableHeight = window.innerHeight;
+        const headerHeight = currentDeviceType === 'mobile' ? 120 : 160;
+        galleryContainer.style.height = (availableHeight - headerHeight) + 'px';
+    }
+    
+    // Recalculer les hauteurs des vidéos
+    const videoSections = document.querySelectorAll('.video-section');
+    videoSections.forEach(section => {
+        if (currentDeviceType === 'mobile') {
+            section.style.height = Math.min(window.innerHeight * 0.5, 350) + 'px';
+        } else if (currentDeviceType === 'tablet') {
+            section.style.height = Math.min(window.innerHeight * 0.65, 500) + 'px';
+        }
+    });
+}
+
+// INITIALISATION RESPONSIVE AU CHARGEMENT
+document.addEventListener('DOMContentLoaded', function() {
+    // Détecter le type d'appareil au démarrage
+    detectDeviceType();
+    
+    // Initialiser les fonctions responsive si nécessaire
+    if (currentDeviceType === 'mobile' || currentDeviceType === 'tablet') {
+        // Remplacer les fonctions standard par les versions responsive
+        setTimeout(() => {
+            initResponsiveMobileMenu();
+            initReturnExplorationResponsive();
+            initGalleryResponsive();
+        }, 2500); // Après le loader
+    }
+    
+    // Gestionnaires d'événements responsive
+    window.addEventListener('resize', handleResponsiveResize);
+    window.addEventListener('orientationchange', handleOrientationChange);
+});
+
+// Export des fonctions pour utilisation globale
+window.currentDeviceType = currentDeviceType;
+window.detectDeviceType = detectDeviceType;
+window.isTouchDeviceResponsive = isTouchDeviceResponsive;
+window.handleResponsiveResize = handleResponsiveResize;
+window.handleOrientationChange = handleOrientationChange;
+
+// ===== FIN DU CODE RESPONSIVE AJOUTÉ =====// ===== VOTRE CODE JAVASCRIPT ORIGINAL COMPLET PRÉSERVÉ =====
+
+// Variables globales
+let currentGalleryIndex = 0;
+let touchStartX = 0;
+let touchEndX = 0;
+let isMenuOpen = false;
+
+document.addEventListener("DOMContentLoaded", function() {
+    console.log('=== DEMARRAGE APPLICATION MOBILE/TACTILE ===');
+    
+    // Détection du type d'appareil
+    const isMobile = window.innerWidth < 768;
+    const isTablet = window.innerWidth >= 768 && window.innerWidth < 1025;
+    const isDesktop = window.innerWidth >= 1025;
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    
+    // *** NOUVEAU LOADER AVEC L-JELLY VISIBLE ***
+    document.body.classList.add('loading');
+    
+    // Créer le nouveau loader avec l-jelly - comme dans app.js
+    const customLoader = document.createElement('div');
+    customLoader.className = 'custom-loader';
+    customLoader.style.cssText = `
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        background-color: #000 !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        z-index: 999999 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        transition: opacity 0.8s ease !important;
+    `;
+    
+    // Enregistrer l-jelly si nécessaire (comme dans app.js)
+    if (window.jelly && window.jelly.register) {
+        window.jelly.register();
+    }
+    
+    // Créer l'élément l-jelly comme dans app.js
+    const jellyLoader = document.createElement('l-jelly');
+    jellyLoader.setAttribute('size', '60');
+    jellyLoader.setAttribute('speed', '1.2');
+    jellyLoader.setAttribute('color', '#ffcc00');
+    jellyLoader.style.cssText = `
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    `;
+    
+    customLoader.appendChild(jellyLoader);
+    document.body.appendChild(customLoader);
+    
+    console.log('Loader l-jelly créé et affiché');
+    
+    // Force le retour en haut
+    history.scrollRestoration = 'manual';
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    
+    // LANCER LA VIDÉO IMMÉDIATEMENT
+    startGlobeVideoImmediately();
+    
+    // MASQUER LE LOADER APRÈS 2 SECONDES ET RÉVÉLER LE SITE
+    setTimeout(() => {
+        console.log('=== MASQUAGE DU LOADER ET RÉVÉLATION DU SITE ===');
+        
+        // Transition fluide du loader
+        customLoader.style.opacity = '0';
+        
+        setTimeout(() => {
+            customLoader.remove();
+            document.body.classList.remove('loading');
+            
+            // Initialiser le curseur personnalisé UNIQUEMENT sur desktop avec souris
+            if (isDesktop && !isTouchDevice) {
+                initCustomCursor();
+                console.log('Curseur personnalisé initialisé pour desktop');
+            }
+            
+            console.log('Site révélé, vidéo active');
+        }, 800);
+        
+    }, 2000);
+    
+    // Masquer l'ancien loader s'il existe
+    const oldLoader = document.querySelector('.loader');
+    if (oldLoader) {
+        oldLoader.style.display = 'none';
+    }
+    
+    // Initialiser toutes les fonctionnalités
+    initGlobalLoader();
+    initMobileMenu();
+    initAnimations();
+    initSideNav();
+    initBackToTop();
+    initShareButtons();
+    fixVideos();
+    initLogoClick();
+    initGallery();
+    initReturnExploration();
+    animateNavLinks();
+    
+    // Gestion du redimensionnement
+    window.addEventListener('resize', handleResize);
+    
+    function handleResize() {
+        const newIsMobile = window.innerWidth < 768;
+        const newIsTablet = window.innerWidth >= 768 && window.innerWidth < 1025;
+        
+        // Fermer le menu mobile si on passe à desktop
+        if (window.innerWidth >= 1025 && isMenuOpen) {
+            closeMenu();
+        }
+        
+        // Réinitialiser la galerie si nécessaire
+        if ((isMobile && !newIsMobile) || (!isMobile && newIsMobile)) {
+            initGallery();
+        }
+    }
+    
+    // Force le retour en haut lors du rechargement
+    window.addEventListener('beforeunload', function() {
+        window.scrollTo(0, 0);
+    });
+    
+    setTimeout(() => {
+        window.scrollTo(0, 0);
+    }, 100);
+    
+    console.log('=== INITIALISATION TERMINEE ===');
+    console.log('Type d\'appareil:', { isMobile, isTablet, isDesktop, isTouchDevice });
+});
+
+// Nouvelle fonction pour lancer la vidéo immédiatement
+function startGlobeVideoImmediately() {
+    const globeVideo = document.querySelector('.globe-video');
+    if (globeVideo) {
+        console.log('>>> LANCEMENT IMMÉDIAT DE LA VIDÉO TEXTURE <<<');
+        
+        globeVideo.muted = true;
+        globeVideo.loop = true;
+        globeVideo.playsInline = true;
+        globeVideo.autoplay = true;
+        
+        // Révéler la vidéo progressivement
+        globeVideo.style.opacity = '0';
+        globeVideo.style.transition = 'opacity 1.5s ease';
+        
+        const playVideo = async function() {
+            try {
+                await globeVideo.play();
+                console.log("Vidéo texture lancée immédiatement");
+                
+                // Révéler la vidéo après le début de lecture
+                setTimeout(() => {
+                    globeVideo.style.opacity = '1';
+                }, 500);
+                
+            } catch (error) {
+                console.log("Erreur lecture vidéo:", error);
+                setTimeout(async () => {
+                    try {
+                        await globeVideo.play();
+                        console.log("Vidéo texture - 2ème tentative réussie");
+                        globeVideo.style.opacity = '1';
+                    } catch (e) {
+                        console.log("Vidéo texture - 2ème tentative échouée");
+                    }
+                }, 1000);
+            }
+        };
+        
+        // Lancer immédiatement
+        if (globeVideo.readyState >= 2) {
+            playVideo();
+        } else {
+            globeVideo.addEventListener('canplay', playVideo, { once: true });
+        }
+        
+        // Surveillance continue
+        setInterval(() => {
+            if (globeVideo.paused && !document.body.classList.contains('loading')) {
+                console.log("Vidéo s'est arrêtée - relancement...");
+                globeVideo.play().catch(e => console.log("Erreur relancement:", e));
+            }
+        }, 3000);
+    }
+}
+
+// Force le retour en haut au chargement
+window.addEventListener('load', function() {
+    setTimeout(() => {
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+    }, 50);
+});
+
+// Initialisation du menu mobile/tablette
+function initMobileMenu() {
+    console.log('=== INITIALISATION MENU MOBILE ===');
+    
+    const menuToggle = document.querySelector('.mobile-menu-toggle');
+    const sideNav = document.querySelector('.side-nav');
+    const menuOverlay = document.querySelector('.menu-overlay');
+    const navLinks = document.querySelectorAll('.nav-link');
+    
+    if (!menuToggle || !sideNav || !menuOverlay) {
+        console.error('Éléments du menu mobile manquants');
+        return;
+    }
+    
+    // Afficher le bouton hamburger après la section hero
+    window.addEventListener('scroll', function() {
+        const heroHeight = document.querySelector('#hero').offsetHeight;
+        if (window.scrollY > heroHeight * 0.8) {
+            menuToggle.classList.add('visible');
+        } else {
+            menuToggle.classList.remove('visible');
+        }
+    });
+    
+    // Toggle du menu
+    menuToggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        if (isMenuOpen) {
+            closeMenu();
+        } else {
+            openMenu();
+        }
+    });
+    
+    // Fermer le menu en cliquant sur l'overlay
+    menuOverlay.addEventListener('click', closeMenu);
+    
+    // Fermer le menu en cliquant sur un lien
+    navLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            if (window.innerWidth < 1025) {
+                closeMenu();
+            }
+        });
+    });
+    
+    // Fonctions d'ouverture/fermeture du menu
+    window.openMenu = openMenu;
+    window.closeMenu = closeMenu;
+    
+    function openMenu() {
+        sideNav.classList.add('open');
+        menuOverlay.classList.add('active');
+        menuToggle.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        isMenuOpen = true;
+        console.log('Menu ouvert');
+    }
+    
+    function closeMenu() {
+        sideNav.classList.remove('open');
+        menuOverlay.classList.remove('active');
+        menuToggle.classList.remove('active');
+        document.body.style.overflow = '';
+        isMenuOpen = false;
+        console.log('Menu fermé');
+    }
+    
+    // Fermer le menu avec la touche Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && isMenuOpen) {
+            closeMenu();
+        }
+    });
+}
+
+// Initialisation du bouton "retour à l'exploration" - AVEC ANIMATION DYNAMIQUE
+function initReturnExploration() {
+    console.log('=== INITIALISATION BOUTON RETOUR EXPLORATION ===');
+    
+    const returnBtn = document.querySelector('.return-exploration');
+    console.log('Bouton trouvé:', returnBtn);
+    
+    if (!returnBtn) {
+        console.error('ERREUR: Bouton retour à l\'exploration non trouvé dans le DOM');
+        return;
+    }
+    
+    const expeditionSection = document.querySelector('#expedition');
+    console.log('Section expédition trouvée:', expeditionSection);
+    
+    if (!expeditionSection) {
+        console.error('ERREUR: Section expédition non trouvée');
+        return;
+    }
+    
+    // Variable locale pour éviter les conflits
+    let expeditionVisited = false;
+    
+    // Observer pour détecter la visite de l'expédition
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            console.log('Observer déclenché - isIntersecting:', entry.isIntersecting);
+            console.log('Intersection ratio:', entry.intersectionRatio);
+            
+            if (entry.isIntersecting && entry.intersectionRatio >= 0.5 && !expeditionVisited) {
+                expeditionVisited = true;
+                console.log('>>> EXPEDITION VRAIMENT VISITEE (50%) - AFFICHAGE DU BOUTON <<<');
+                
+                returnBtn.style.opacity = '1';
+                returnBtn.style.pointerEvents = 'all';
+                returnBtn.style.transform = 'translateY(0)';
+                returnBtn.classList.add('visible');
+                
+                console.log('Bouton affiché - styles appliqués');
+            }
+        });
+    }, {
+        threshold: 0.5,
+        rootMargin: '-100px 0px -100px 0px'
+    });
+    
+    observer.observe(expeditionSection);
+    console.log('Observer attaché avec seuil 50%');
+    
+    // NOUVEAU: Animation dynamique quand on est en haut du site
+    window.addEventListener('scroll', function() {
+        if (returnBtn.classList.contains('visible')) {
+            if (window.scrollY < 100) {
+                // En haut du site - animation pulse
+                returnBtn.classList.add('at-top');
+            } else {
+                // Pas en haut - retour normal
+                returnBtn.classList.remove('at-top');
+            }
+        }
+    });
+    
+    // Gestion du clic - REDIRECTION VERS LOCALHOST
+    returnBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        console.log('>>> CLIC SUR BOUTON RETOUR EXPLORATION - REDIRECTION IMMÉDIATE <<<');
+        
+        // Animation de clic
+        returnBtn.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+            window.location.href = 'http://localhost:3000/';
+        }, 150);
+    });
+    
+    console.log('=== FIN INITIALISATION BOUTON ===');
+}
+
+// Initialisation du loader global
+function initGlobalLoader() {
+    let globalLoader = document.querySelector('.global-loader');
+    if (!globalLoader) {
+        globalLoader = document.createElement('div');
+        globalLoader.className = 'global-loader';
+        globalLoader.innerHTML = `
+            <div class="loader-content">
+                <l-jelly size="40" speed="0.9" color="#ffdd00"></l-jelly>
+            </div>
+        `;
+        document.body.appendChild(globalLoader);
+    }
+    
+    window.showGlobalLoader = function() {
+        globalLoader.classList.add('active');
+    };
+    
+    window.hideGlobalLoader = function() {
+        globalLoader.classList.remove('active');
+    };
+    
+    // Loader pour les navigations internes
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            showGlobalLoader();
+            setTimeout(() => {
+                hideGlobalLoader();
+            }, 800);
+        });
+    });
+    
+    window.addEventListener('beforeunload', function() {
+        showGlobalLoader();
+    });
+}
+
+// Initialisation de la galerie avec support tactile
+function initGallery() {
+    console.log('=== INITIALISATION GALERIE TACTILE ===');
+    
+    loadGalleryImages();
+    
+    const galleryTrack = document.querySelector('.gallery-track');
+    const dots = document.querySelectorAll('.gallery-dot');
+    const prevBtn = document.querySelector('.gallery-prev');
+    const nextBtn = document.querySelector('.gallery-next');
+    let isFullscreenMode = false;
+    let autoplayInterval;
+    
+    if (!galleryTrack) {
+        console.error('Galerie non trouvée');
+        return;
+    }
+    
+    // Créer l'élément pour le mode plein écran
+    let fullscreenMode = document.querySelector('.fullscreen-mode');
+    if (!fullscreenMode) {
+        fullscreenMode = document.createElement('div');
+        fullscreenMode.className = 'fullscreen-mode';
+        fullscreenMode.innerHTML = `
+            <img src="" alt="Image en plein écran" class="fullscreen-image">
+        `;
+        document.body.appendChild(fullscreenMode);
+    }
+    
+    const fsImage = fullscreenMode.querySelector('.fullscreen-image');
+    
+    // Fonction pour afficher une slide spécifique
+    function showSlide(index) {
+        const slides = document.querySelectorAll('.gallery-slide');
+        if (!slides.length) return;
+        
+        if (index >= slides.length) index = 0;
+        if (index < 0) index = slides.length - 1;
+        
+        slides.forEach(slide => {
+            slide.classList.remove('active');
+            slide.classList.remove('transitioning');
+        });
+        
+        slides[index].classList.add('active');
+        slides[index].classList.add('transitioning');
+        
+        const updatedDots = document.querySelectorAll('.gallery-dot');
+        updatedDots.forEach(dot => dot.classList.remove('active'));
+        if (updatedDots[index]) {
+            updatedDots[index].classList.add('active');
+        }
+        
+        currentGalleryIndex = index;
+        console.log('Slide active:', index);
+    }
+    
+    // Navigation par boutons
+    if (prevBtn) {
+        prevBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSlide(currentGalleryIndex - 1);
+        });
+    }
+    
+    if (nextBtn) {
+        nextBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSlide(currentGalleryIndex + 1);
+        });
+    }
+    
+    // Navigation par dots
+    function initDots() {
+        const dots = document.querySelectorAll('.gallery-dot');
+        dots.forEach((dot, index) => {
+            dot.addEventListener('click', (e) => {
+                e.preventDefault();
+                showSlide(index);
+            });
+        });
+    }
+    
+    // Support tactile pour le swipe
+    if ('ontouchstart' in window) {
+        galleryTrack.addEventListener('touchstart', handleTouchStart, { passive: true });
+        galleryTrack.addEventListener('touchmove', handleTouchMove, { passive: true });
+        galleryTrack.addEventListener('touchend', handleTouchEnd, { passive: true });
+    }
+    
+    function handleTouchStart(e) {
+        touchStartX = e.touches[0].clientX;
+    }
+    
+    function handleTouchMove(e) {
+        if (!touchStartX) return;
+        touchEndX = e.touches[0].clientX;
+    }
+    
+    function handleTouchEnd(e) {
+        if (!touchStartX || !touchEndX) return;
+        
+        const difference = touchStartX - touchEndX;
+        const threshold = 50; // Seuil minimum pour déclencher le swipe
+        
+        if (Math.abs(difference) > threshold) {
+            if (difference > 0) {
+                // Swipe vers la gauche - image suivante
+                showSlide(currentGalleryIndex + 1);
+            } else {
+                // Swipe vers la droite - image précédente
+                showSlide(currentGalleryIndex - 1);
+            }
+        }
+        
+        touchStartX = 0;
+        touchEndX = 0;
+    }
+    
+    // Mode plein écran
+    function activateFullscreenMode(imgSrc) {
+        showGlobalLoader();
+        
+        fsImage.src = imgSrc;
+        fsImage.onload = function() {
+            hideGlobalLoader();
+            fullscreenMode.classList.add('active');
+            isFullscreenMode = true;
+            stopAutoplay();
+            document.body.style.overflow = 'hidden';
+        };
+    }
+    
+    function deactivateFullscreenMode() {
+        fullscreenMode.classList.remove('active');
+        isFullscreenMode = false;
+        startAutoplay();
+        document.body.style.overflow = '';
+    }
+    
+    // Fermer le mode plein écran par clic sur le fond
+    fullscreenMode.addEventListener('click', function(e) {
+        if (e.target === fullscreenMode) {
+            deactivateFullscreenMode();
+        }
+    });
+    
+    // Navigation en mode plein écran
+    if ('ontouchstart' in window) {
+        fsImage.addEventListener('touchstart', handleTouchStart, { passive: true });
+        fsImage.addEventListener('touchmove', handleTouchMove, { passive: true });
+        fsImage.addEventListener('touchend', function(e) {
+            handleTouchEnd(e);
+            // Mettre à jour l'image en plein écran
+            const currentSlide = document.querySelector('.gallery-slide.active');
+            const currentImg = currentSlide.querySelector('.gallery-image');
+            if (currentImg) {
+                showGlobalLoader();
+                fsImage.src = currentImg.src;
+                fsImage.onload = function() {
+                    hideGlobalLoader();
+                };
+            }
+        }, { passive: true });
+    } else {
+        // Navigation par clic sur desktop
+        fsImage.addEventListener('click', function(e) {
+            e.stopPropagation();
+            showSlide(currentGalleryIndex + 1);
+            
+            showGlobalLoader();
+            const currentSlide = document.querySelector('.gallery-slide.active');
+            const currentImg = currentSlide.querySelector('.gallery-image');
+            fsImage.src = currentImg.src;
+            fsImage.onload = function() {
+                hideGlobalLoader();
+            };
+        });
+    }
+    
+    // Ajouter des écouteurs pour les clics sur les images
+    function initImageClicks() {
+        const imageContainers = document.querySelectorAll('.gallery-image-container');
+        imageContainers.forEach(container => {
+            container.addEventListener('click', function(e) {
+                e.preventDefault();
+                const img = this.querySelector('.gallery-image');
+                if (img) {
+                    activateFullscreenMode(img.src);
+                }
+            });
+        });
+    }
+    
+    // Défilement automatique (seulement sur desktop)
+    function startAutoplay() {
+        if (window.innerWidth >= 1025 && !('ontouchstart' in window)) {
+            autoplayInterval = setInterval(() => {
+                if (!isFullscreenMode) {
+                    const gallerySection = document.querySelector('#gallery');
+                    const rect = gallerySection.getBoundingClientRect();
+                    
+                    if (rect.top <= 0 && rect.bottom >= window.innerHeight / 2) {
+                        showSlide(currentGalleryIndex + 1);
+                    }
+                }
+            }, 8000);
+        }
+    }
+    
+    function stopAutoplay() {
+        clearInterval(autoplayInterval);
+    }
+    
+    // Gestion des touches clavier
+    document.addEventListener('keydown', e => {
+        if (isFullscreenMode) {
+            if (e.key === 'Escape') {
+                deactivateFullscreenMode();
+            } else if (e.key === 'ArrowLeft') {
+                showSlide(currentGalleryIndex - 1);
+                const currentSlide = document.querySelector('.gallery-slide.active');
+                const currentImg = currentSlide.querySelector('.gallery-image');
+                if (currentImg) {
+                    showGlobalLoader();
+                    fsImage.src
