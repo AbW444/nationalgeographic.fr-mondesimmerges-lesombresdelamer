@@ -818,15 +818,17 @@ function initTranslateButton() {
         }, 300);
     });
     
-    // Charger la langue sauvegardée au démarrage
-    const savedLang = localStorage.getItem('preferredLanguage');
-    if (savedLang && savedLang !== currentLanguage && translations[savedLang]) {
-        setTimeout(() => {
-            translateSite(savedLang);
-            currentLanguage = savedLang;
-            updateTranslateButton();
-        }, 1000);
-    }
+    // FORCER LE FRANÇAIS AU DÉMARRAGE - IGNORER LA LANGUE SAUVEGARDÉE
+	// Le site se charge TOUJOURS en français, peu importe les préférences sauvegardées
+	setTimeout(() => {
+		// S'assurer que le site est en français
+		if (currentLanguage !== 'fr') {
+			currentLanguage = 'fr';
+			translateSite('fr');
+		}
+		updateTranslateButton();
+		console.log('>>> SITE FORCÉ EN FRANÇAIS AU DÉMARRAGE <<<');
+	}, 500);
 }
 
 // Fonction pour mettre à jour l'affichage du bouton - VERSION INVERSÉE
