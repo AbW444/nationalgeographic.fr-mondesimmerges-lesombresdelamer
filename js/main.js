@@ -4,7 +4,7 @@ let currentGalleryIndex = 0;
 let touchStartX = 0;
 let touchEndX = 0;
 let isMenuOpen = false;
-let currentLanguage = 'fr'; // NOUVELLE VARIABLE GLOBALE
+let currentLanguage = 'fr'; // VARIABLE GLOBALE POUR LA LANGUE
 
 // Variables pour les contrôles vidéo - DÉPLACÉES EN GLOBAL
 let controlsHideTimeout;
@@ -107,7 +107,7 @@ document.addEventListener("DOMContentLoaded", function() {
     initSideNav();
     initBackToTop();
     initShareButtons();
-    initTranslateButton(); // UNE SEULE FOIS
+    initTranslateButton(); // UNE SEULE FOIS - TRADUCTION COMPLÈTE
     fixVideos();
     initLogoClick();
     initGallery();
@@ -145,9 +145,12 @@ document.addEventListener("DOMContentLoaded", function() {
     console.log('Type d\'appareil:', { isMobile, isTablet, isDesktop, isTouchDevice });
 });
 
-// Traductions du site - UNE SEULE FOIS
+// ========================================
+// TRADUCTIONS COMPLÈTES DU SITE
+// ========================================
 const translations = {
     fr: {
+        // Navigation et titre principal
         title: "LES OMBRES DE LA MER",
         subtitle: "Une enquête sur le traffic des espèces marines en voie d'extinction",
         navHome: "Accueil",
@@ -157,18 +160,102 @@ const translations = {
         navScience: "Enjeux scientifiques",
         navResources: "Documentation",
         navCredits: "Équipe",
+        
+        // Section documentaire
         docTitle: "PRÉSENTATION DU DOCUMENTAIRE",
         docDesc1: "Dans le golfe de Californie, un groupe d'individus déterminés risque leur vie pour sauver le marsouin du Pacifique, qui est en passe de disparaître à jamais. Cette espèce rare, connue localement sous le nom de \"vaquita\", est victime de la pêche illégale, visant un autre poisson menacé : le totoaba, dont la vessie natatoire est surnommée \"la cocaïne de la mer\" en raison de sa valeur sur le marché noir.",
         docDesc2: "Lorsqu'environnementalistes, journalistes d'investigation et services de renseignement militaire suivent les traces du \"cartel de la mer\", ils découvrent une réalité sinistre qui dépasse la simple activité de pêche : il s'agit d'une véritable opération criminelle qui menace la dernière espèce de marsouin au monde.",
         docButton: "Voir le documentaire",
+        
+        // Section expédition
         expeditionTitle: "L'EXPÉDITION",
+        expeditionDesc1: "Une équipe de scientifiques marins, de conservationnistes, de journalistes d'investigation et d'agents de renseignement s'est unie pour documenter et combattre le trafic illégal d'espèces marines menacées dans le golfe de Californie.",
+        expeditionDesc2: "Pendant deux ans, l'équipe a navigué dans les eaux dangereuses du Golfe, poursuivant les pêcheurs illégaux, documentant leurs activités et travaillant avec les autorités locales pour sauver la vaquita de l'extinction.",
+        expeditionDesc3: "L'expédition a révélé les liens complexes entre les cartels de la drogue, les marchés noirs asiatiques et les communautés de pêcheurs locales, exposant un réseau criminel international qui menace l'écosystème fragile du golfe de Californie.",
+        
+        // Section galerie
         galleryTitle: "GALERIE PHOTO",
+        galleryImg1Title: "Vaquita en milieu naturel",
+        galleryImg1Desc: "Rare photographie d'un marsouin du Pacifique dans le golfe de Californie.",
+        galleryImg2Title: "Observer la vaquita",
+        galleryImg2Desc: "Les scientifiques utilisent des techniques avancées pour repérer ces créatures élusives.",
+        galleryImg3Title: "Filets de pêche illégaux",
+        galleryImg3Desc: "Récupération de pièges mortels lors d'une opération de nettoyage.",
+        galleryImg4Title: "Sur les traces des braconniers",
+        galleryImg4Desc: "L'équipe d'intervention lors d'une mission de surveillance.",
+        
+        // Section science
         scienceTitle: "ENJEUX SCIENTIFIQUES ET ÉCOLOGIQUES",
+        scienceIntro: "Le déclin de la vaquita et la surpêche du totoaba représentent une crise écologique aux implications scientifiques profondes. Ce documentaire explore les conséquences de la disparition d'espèces clés sur l'écosystème marin, ainsi que les défis de la conservation dans un contexte socio-économique complexe.",
+        stat1Number: "10",
+        stat1Title: "Vaquitas restantes",
+        stat1Desc: "Selon les estimations les plus récentes, moins de 10 vaquitas subsistent dans leur habitat naturel, ce qui en fait le mammifère marin le plus menacé au monde.",
+        stat2Number: "$100K",
+        stat2Title: "Prix d'une vessie de totoaba",
+        stat2Desc: "Une seule vessie natatoire de totoaba peut se vendre jusqu'à 100 000 dollars sur le marché noir en Asie, où elle est considérée comme un remède traditionnel.",
+        stat3Number: "95%",
+        stat3Title: "Déclin de la population",
+        stat3Desc: "La population de vaquitas a diminué de plus de 95% au cours des 20 dernières années, principalement en raison des prises accessoires dans les filets de pêche illégaux.",
+        scienceImg1Caption: "Une rare photographie d'une vaquita dans le golfe de Californie. Ces marsouins timides sont rarement observés dans la nature.",
+        scienceImg2Caption: "Des filets de pêche illégaux récupérés lors d'une opération de nettoyage dans la zone protégée de la vaquita.",
+        
+        // Section ressources
         resourcesTitle: "DOCUMENTATION ET RECHERCHES ASSOCIÉES",
+        resourcesIntro: "Explorez les publications scientifiques, les rapports de conservation et les initiatives qui sous-tendent les efforts de protection des espèces menacées du golfe de Californie. Ces ressources constituent le fondement de notre documentation.",
+        resource1Title: "Rapport sur l'état de la vaquita",
+        resource1Desc: "Le dernier rapport scientifique détaillant la population actuelle, les menaces et les efforts de conservation pour sauver la vaquita de l'extinction.",
+        resource1Link: "Télécharger le rapport",
+        resource2Title: "Atlas des espèces menacées",
+        resource2Desc: "Une cartographie complète des espèces marines menacées dans le golfe de Californie, leurs habitats et les zones prioritaires pour la conservation.",
+        resource2Link: "Explorer l'atlas",
+        resource3Title: "Guide d'identification des espèces",
+        resource3Desc: "Un guide illustré pour identifier les principales espèces marines du golfe de Californie, y compris celles qui sont protégées ou menacées.",
+        resource3Link: "Consulter le guide",
+        resource4Title: "Données de surveillance acoustique",
+        resource4Desc: "Enregistrements et analyses des données de surveillance acoustique utilisées pour suivre les populations de vaquitas dans leur habitat naturel.",
+        resource4Link: "Écouter les données",
+        resource5Title: "Études sur l'impact économique",
+        resource5Desc: "Recherches sur l'impact économique de la pêche durable par rapport à la pêche illégale sur les communautés locales du golfe de Californie.",
+        resource5Link: "Lire les études",
+        resource6Title: "Programme de conservation marine",
+        resource6Desc: "Détails sur les initiatives de conservation marine en cours dans le golfe de Californie et comment participer aux efforts de protection.",
+        resource6Link: "Découvrir le programme",
+        
+        // Section crédits
         creditsTitle: "ÉQUIPE ET COLLABORATIONS",
-        copyright: "© 2025 National Geographic Partners, LLC. Tous droits réservés."
+        creditsIntro: "Découvrez l'équipe exceptionnelle de créateurs, scientifiques et conservationnistes qui ont rendu possible ce documentaire, ainsi que les organisations partenaires qui soutiennent les efforts de préservation des écosystèmes marins.",
+        productionTeam: "ÉQUIPE DE PRODUCTION",
+        scientificTeam: "ÉQUIPE SCIENTIFIQUE",
+        additionalResources: "RESSOURCES COMPLÉMENTAIRES",
+        
+        // Équipe de production
+        director: "Réalisateur, Directeur de la photographie",
+        producer: "Producteur",
+        executiveProducer: "Producteur exécutif",
+        executiveProducerFemale: "Productrice exécutive",
+        
+        // Équipe scientifique
+        scientificDirector: "Directrice scientifique, VaquitaCPR",
+        programCoordinator: "Coordinateur du Programme de conservation de la vaquita",
+        operationsCoordinator: "Coordinateur des opérations, Sea Shepherd",
+        
+        // Liens ressources
+        natGeoSite: "Site officiel de National Geographic",
+        vaquitaInitiative: "Page de l'Initiative vaquita",
+        cirvaReport: "Rapport scientifique CIRVA",
+        seaShepherd: "Sea Shepherd Conservation Society",
+        donate: "Faire un don pour la conservation",
+        educationalMaterial: "Matériel éducatif",
+        screenings: "Projections et événements",
+        press: "Presse et médias",
+        
+        // Footer et divers
+        copyright: "© 2025 National Geographic Partners, LLC. Tous droits réservés.",
+        returnToExploration: "Retour à l'exploration"
     },
+    
     en: {
+        // Navigation et titre principal
         title: "SEA OF SHADOWS",
         subtitle: "An investigation into the trafficking of endangered marine species",
         navHome: "Home",
@@ -178,18 +265,329 @@ const translations = {
         navScience: "Scientific Issues",
         navResources: "Documentation",
         navCredits: "Team",
+        
+        // Section documentaire
         docTitle: "DOCUMENTARY PRESENTATION",
         docDesc1: "In the Gulf of California, a group of determined individuals risk their lives to save the Pacific porpoise, which is about to disappear forever. This rare species, known locally as the \"vaquita\", is a victim of illegal fishing, targeting another endangered fish: the totoaba, whose swim bladder is nicknamed \"the cocaine of the sea\" due to its value on the black market.",
         docDesc2: "When environmentalists, investigative journalists and military intelligence services follow the trail of the \"sea cartel\", they discover a sinister reality that goes beyond simple fishing activity: it is a real criminal operation that threatens the last porpoise species in the world.",
         docButton: "Watch the documentary",
+        
+        // Section expédition
         expeditionTitle: "THE EXPEDITION",
+        expeditionDesc1: "A team of marine scientists, conservationists, investigative journalists and intelligence agents united to document and combat the illegal trafficking of endangered marine species in the Gulf of California.",
+        expeditionDesc2: "For two years, the team navigated the dangerous waters of the Gulf, pursuing illegal fishermen, documenting their activities and working with local authorities to save the vaquita from extinction.",
+        expeditionDesc3: "The expedition revealed the complex links between drug cartels, Asian black markets and local fishing communities, exposing an international criminal network that threatens the fragile ecosystem of the Gulf of California.",
+        
+        // Section galerie
         galleryTitle: "PHOTO GALLERY",
+        galleryImg1Title: "Vaquita in its natural habitat",
+        galleryImg1Desc: "Rare photograph of a Pacific porpoise in the Gulf of California.",
+        galleryImg2Title: "Observing the vaquita",
+        galleryImg2Desc: "Scientists use advanced techniques to spot these elusive creatures.",
+        galleryImg3Title: "Illegal fishing nets",
+        galleryImg3Desc: "Recovery of deadly traps during a cleanup operation.",
+        galleryImg4Title: "On the trail of poachers",
+        galleryImg4Desc: "The intervention team during a surveillance mission.",
+        
+        // Section science
         scienceTitle: "SCIENTIFIC AND ECOLOGICAL ISSUES",
+        scienceIntro: "The decline of the vaquita and overfishing of the totoaba represent an ecological crisis with profound scientific implications. This documentary explores the consequences of the disappearance of key species on the marine ecosystem, as well as the challenges of conservation in a complex socio-economic context.",
+        stat1Number: "10",
+        stat1Title: "Vaquitas remaining",
+        stat1Desc: "According to the most recent estimates, fewer than 10 vaquitas remain in their natural habitat, making it the most endangered marine mammal in the world.",
+        stat2Number: "$100K",
+        stat2Title: "Price of a totoaba bladder",
+        stat2Desc: "A single totoaba swim bladder can sell for up to $100,000 on the black market in Asia, where it is considered a traditional remedy.",
+        stat3Number: "95%",
+        stat3Title: "Population decline",
+        stat3Desc: "The vaquita population has declined by more than 95% over the past 20 years, mainly due to bycatch in illegal fishing nets.",
+        scienceImg1Caption: "A rare photograph of a vaquita in the Gulf of California. These shy porpoises are rarely observed in the wild.",
+        scienceImg2Caption: "Illegal fishing nets recovered during a cleanup operation in the vaquita protected area.",
+        
+        // Section ressources
         resourcesTitle: "DOCUMENTATION AND ASSOCIATED RESEARCH",
+        resourcesIntro: "Explore the scientific publications, conservation reports and initiatives that underpin the efforts to protect endangered species in the Gulf of California. These resources form the foundation of our documentation.",
+        resource1Title: "Vaquita status report",
+        resource1Desc: "The latest scientific report detailing the current population, threats and conservation efforts to save the vaquita from extinction.",
+        resource1Link: "Download the report",
+        resource2Title: "Atlas of endangered species",
+        resource2Desc: "A comprehensive mapping of endangered marine species in the Gulf of California, their habitats and priority areas for conservation.",
+        resource2Link: "Explore the atlas",
+        resource3Title: "Species identification guide",
+        resource3Desc: "An illustrated guide to identify the main marine species of the Gulf of California, including those that are protected or threatened.",
+        resource3Link: "Consult the guide",
+        resource4Title: "Acoustic monitoring data",
+        resource4Desc: "Recordings and analyses of acoustic monitoring data used to track vaquita populations in their natural habitat.",
+        resource4Link: "Listen to the data",
+        resource5Title: "Economic impact studies",
+        resource5Desc: "Research on the economic impact of sustainable fishing versus illegal fishing on local communities in the Gulf of California.",
+        resource5Link: "Read the studies",
+        resource6Title: "Marine conservation program",
+        resource6Desc: "Details on ongoing marine conservation initiatives in the Gulf of California and how to participate in protection efforts.",
+        resource6Link: "Discover the program",
+        
+        // Section crédits
         creditsTitle: "TEAM AND COLLABORATIONS",
-        copyright: "© 2025 National Geographic Partners, LLC. All rights reserved."
+        creditsIntro: "Discover the exceptional team of creators, scientists and conservationists who made this documentary possible, as well as the partner organizations that support efforts to preserve marine ecosystems.",
+        productionTeam: "PRODUCTION TEAM",
+        scientificTeam: "SCIENTIFIC TEAM",
+        additionalResources: "ADDITIONAL RESOURCES",
+        
+        // Équipe de production
+        director: "Director, Director of Photography",
+        producer: "Producer",
+        executiveProducer: "Executive Producer",
+        executiveProducerFemale: "Executive Producer",
+        
+        // Équipe scientifique
+        scientificDirector: "Scientific Director, VaquitaCPR",
+        programCoordinator: "Vaquita Conservation Program Coordinator",
+        operationsCoordinator: "Operations Coordinator, Sea Shepherd",
+        
+        // Liens ressources
+        natGeoSite: "Official National Geographic website",
+        vaquitaInitiative: "Vaquita Initiative page",
+        cirvaReport: "CIRVA scientific report",
+        seaShepherd: "Sea Shepherd Conservation Society",
+        donate: "Donate for conservation",
+        educationalMaterial: "Educational material",
+        screenings: "Screenings and events",
+        press: "Press and media",
+        
+        // Footer et divers
+        copyright: "© 2025 National Geographic Partners, LLC. All rights reserved.",
+        returnToExploration: "Return to exploration"
     }
 };
+
+// ========================================
+// FONCTION DE TRADUCTION COMPLÈTE
+// ========================================
+function translateSite(targetLang) {
+    console.log(`>>> TRADUCTION COMPLÈTE VERS: ${targetLang} <<<`);
+    
+    const t = translations[targetLang];
+    if (!t) {
+        console.error(`Langue ${targetLang} non supportée`);
+        return;
+    }
+    
+    // === TITRE PRINCIPAL ET NAVIGATION ===
+    
+    // Titre principal
+    const title = document.querySelector('.title');
+    if (title) title.textContent = t.title;
+    
+    // Sous-titre
+    const subtitle = document.querySelector('.subtitle');
+    if (subtitle) subtitle.textContent = t.subtitle;
+    
+    // Navigation
+    const navLinks = document.querySelectorAll('.nav-link');
+    if (navLinks[0]) navLinks[0].textContent = t.navHome;
+    if (navLinks[1]) navLinks[1].textContent = t.navDoc;
+    if (navLinks[2]) navLinks[2].textContent = t.navExpedition;
+    if (navLinks[3]) navLinks[3].textContent = t.navGallery;
+    if (navLinks[4]) navLinks[4].textContent = t.navScience;
+    if (navLinks[5]) navLinks[5].textContent = t.navResources;
+    if (navLinks[6]) navLinks[6].textContent = t.navCredits;
+    
+    // === SECTION DOCUMENTAIRE ===
+    
+    // Titre de section documentaire
+    const docTitleEl = document.querySelector('#documentary .section-title');
+    if (docTitleEl) docTitleEl.textContent = t.docTitle;
+    
+    // Descriptions du documentaire
+    const docDescriptions = document.querySelectorAll('#documentary .description');
+    if (docDescriptions[0]) docDescriptions[0].textContent = t.docDesc1;
+    if (docDescriptions[1]) docDescriptions[1].textContent = t.docDesc2;
+    
+    // Bouton documentaire
+    const docButton = document.querySelector('.doc-button');
+    if (docButton) {
+        // Conserver le SVG et remplacer seulement le texte
+        const svg = docButton.querySelector('svg');
+        const svgHTML = svg ? svg.outerHTML : '';
+        docButton.innerHTML = svgHTML + ' ' + t.docButton;
+    }
+    
+    // === SECTION EXPÉDITION ===
+    
+    // Titre de l'expédition
+    const expeditionTitleEl = document.querySelector('#expedition .section-title');
+    if (expeditionTitleEl) expeditionTitleEl.textContent = t.expeditionTitle;
+    
+    // Descriptions de l'expédition
+    const expeditionDescriptions = document.querySelectorAll('#expedition .description');
+    if (expeditionDescriptions[0]) expeditionDescriptions[0].textContent = t.expeditionDesc1;
+    if (expeditionDescriptions[1]) expeditionDescriptions[1].textContent = t.expeditionDesc2;
+    if (expeditionDescriptions[2]) expeditionDescriptions[2].textContent = t.expeditionDesc3;
+    
+    // === SECTION GALERIE ===
+    
+    // Titre de la galerie
+    const galleryTitleEl = document.querySelector('#gallery .section-title, .gallery-title');
+    if (galleryTitleEl) galleryTitleEl.textContent = t.galleryTitle;
+    
+    // Informations des images de galerie
+    const galleryInfos = document.querySelectorAll('.image-info');
+    if (galleryInfos.length > 0) {
+        const imageData = [
+            { title: t.galleryImg1Title, desc: t.galleryImg1Desc },
+            { title: t.galleryImg2Title, desc: t.galleryImg2Desc },
+            { title: t.galleryImg3Title, desc: t.galleryImg3Desc },
+            { title: t.galleryImg4Title, desc: t.galleryImg4Desc }
+        ];
+        
+        galleryInfos.forEach((info, index) => {
+            if (imageData[index]) {
+                const h3 = info.querySelector('h3');
+                const p = info.querySelector('p');
+                if (h3) h3.textContent = imageData[index].title;
+                if (p) p.textContent = imageData[index].desc;
+            }
+        });
+    }
+    
+    // === SECTION SCIENCE ===
+    
+    // Titre de la section science
+    const scienceTitleEl = document.querySelector('#science .section-title');
+    if (scienceTitleEl) scienceTitleEl.textContent = t.scienceTitle;
+    
+    // Introduction scientifique
+    const scienceIntroEl = document.querySelector('#science .scientific-intro .description');
+    if (scienceIntroEl) scienceIntroEl.textContent = t.scienceIntro;
+    
+    // Statistiques
+    const statCards = document.querySelectorAll('.stat-card');
+    const statData = [
+        { number: t.stat1Number, title: t.stat1Title, desc: t.stat1Desc },
+        { number: t.stat2Number, title: t.stat2Title, desc: t.stat2Desc },
+        { number: t.stat3Number, title: t.stat3Title, desc: t.stat3Desc }
+    ];
+    
+    statCards.forEach((card, index) => {
+        if (statData[index]) {
+            const number = card.querySelector('.stat-number');
+            const title = card.querySelector('.stat-title');
+            const desc = card.querySelector('.stat-desc');
+            
+            if (number) number.textContent = statData[index].number;
+            if (title) title.textContent = statData[index].title;
+            if (desc) desc.textContent = statData[index].desc;
+        }
+    });
+    
+    // Légendes des images scientifiques
+    const scienceImageCaptions = document.querySelectorAll('#science .image-caption');
+    if (scienceImageCaptions[0]) scienceImageCaptions[0].textContent = t.scienceImg1Caption;
+    if (scienceImageCaptions[1]) scienceImageCaptions[1].textContent = t.scienceImg2Caption;
+    
+    // === SECTION RESSOURCES ===
+    
+    // Titre de la section ressources
+    const resourcesTitleEl = document.querySelector('#resources .section-title');
+    if (resourcesTitleEl) resourcesTitleEl.textContent = t.resourcesTitle;
+    
+    // Introduction des ressources
+    const resourcesIntroEl = document.querySelector('#resources .resources-intro .description');
+    if (resourcesIntroEl) resourcesIntroEl.textContent = t.resourcesIntro;
+    
+    // Cartes de ressources
+    const resourceCards = document.querySelectorAll('.resource-card');
+    const resourceData = [
+        { title: t.resource1Title, desc: t.resource1Desc, link: t.resource1Link },
+        { title: t.resource2Title, desc: t.resource2Desc, link: t.resource2Link },
+        { title: t.resource3Title, desc: t.resource3Desc, link: t.resource3Link },
+        { title: t.resource4Title, desc: t.resource4Desc, link: t.resource4Link },
+        { title: t.resource5Title, desc: t.resource5Desc, link: t.resource5Link },
+        { title: t.resource6Title, desc: t.resource6Desc, link: t.resource6Link }
+    ];
+    
+    resourceCards.forEach((card, index) => {
+        if (resourceData[index]) {
+            const title = card.querySelector('.resource-title');
+            const desc = card.querySelector('.resource-desc');
+            const link = card.querySelector('.resource-link');
+            
+            if (title) title.textContent = resourceData[index].title;
+            if (desc) desc.textContent = resourceData[index].desc;
+            if (link) {
+                const span = link.querySelector('span');
+                const spanHTML = span ? span.outerHTML : '<span>→</span>';
+                link.innerHTML = resourceData[index].link + ' ' + spanHTML;
+            }
+        }
+    });
+    
+    // === SECTION CRÉDITS ===
+    
+    // Titre de la section crédits
+    const creditsTitleEl = document.querySelector('#credits .section-title');
+    if (creditsTitleEl) creditsTitleEl.textContent = t.creditsTitle;
+    
+    // Introduction des crédits
+    const creditsIntroEl = document.querySelector('#credits .credits-intro .description');
+    if (creditsIntroEl) creditsIntroEl.textContent = t.creditsIntro;
+    
+    // Catégories de crédits
+    const creditsCategories = document.querySelectorAll('.credits-category');
+    if (creditsCategories[0]) creditsCategories[0].textContent = t.productionTeam;
+    if (creditsCategories[1]) creditsCategories[1].textContent = t.scientificTeam;
+    if (creditsCategories[2]) creditsCategories[2].textContent = t.additionalResources;
+    
+    // Rôles de l'équipe de production
+    const productionRoles = document.querySelectorAll('#credits .credits-list:first-of-type .credits-role');
+    const productionRoleData = [t.director, t.producer, t.executiveProducer, t.executiveProducerFemale, t.executiveProducerFemale];
+    
+    productionRoles.forEach((role, index) => {
+        if (productionRoleData[index]) {
+            role.textContent = productionRoleData[index];
+        }
+    });
+    
+    // Rôles de l'équipe scientifique
+    const scientificRoles = document.querySelectorAll('#credits .credits-list:nth-of-type(2) .credits-role');
+    const scientificRoleData = [t.scientificDirector, t.programCoordinator, t.operationsCoordinator];
+    
+    scientificRoles.forEach((role, index) => {
+        if (scientificRoleData[index]) {
+            role.textContent = scientificRoleData[index];
+        }
+    });
+    
+    // Liens de ressources supplémentaires
+    const resourceLinks = document.querySelectorAll('.credits-link');
+    const resourceLinkData = [
+        t.natGeoSite, t.vaquitaInitiative, t.cirvaReport, t.seaShepherd,
+        t.donate, t.educationalMaterial, t.screenings, t.press
+    ];
+    
+    resourceLinks.forEach((link, index) => {
+        if (resourceLinkData[index]) {
+            const span = link.querySelector('span');
+            const spanHTML = span ? span.outerHTML : '<span>→</span>';
+            link.innerHTML = resourceLinkData[index] + ' ' + spanHTML;
+        }
+    });
+    
+    // === ÉLÉMENTS DIVERS ===
+    
+    // Copyright
+    const copyright = document.querySelector('.copyright');
+    if (copyright) copyright.textContent = t.copyright;
+    
+    // Bouton retour à l'exploration
+    const returnText = document.querySelector('.return-text');
+    if (returnText) returnText.textContent = t.returnToExploration;
+    
+    // Mettre à jour le titre de la page
+    document.title = `National Geographic | ${t.title}`;
+    
+    console.log(`>>> SITE ENTIÈREMENT TRADUIT EN ${targetLang.toUpperCase()} <<<`);
+}
 
 // Fonctions pour les contrôles vidéo - DÉPLACÉES EN GLOBAL
 function hideControlsAfterDelay(delay = 3000) {
@@ -362,9 +760,11 @@ function initMobileMenu() {
     });
 }
 
-// Initialisation du bouton de traduction avec initiales
+// ========================================
+// INITIALISATION DU BOUTON DE TRADUCTION COMPLÈTE
+// ========================================
 function initTranslateButton() {
-    console.log('=== INITIALISATION BOUTON TRADUCTION AVEC INITIALES ===');
+    console.log('=== INITIALISATION BOUTON TRADUCTION COMPLÈTE ===');
     
     const translateButton = document.querySelector('.translate-button');
     const translateCurrent = document.querySelector('.translate-current');
@@ -395,13 +795,14 @@ function initTranslateButton() {
         
         const newLang = currentLanguage === 'fr' ? 'en' : 'fr';
         
-        console.log(`>>> CHANGEMENT DE LANGUE: ${currentLanguage} -> ${newLang} <<<`);
+        console.log(`>>> CHANGEMENT DE LANGUE COMPLET: ${currentLanguage} -> ${newLang} <<<`);
         
         // Animation de changement
         translateButton.classList.add('changing');
         showGlobalLoader();
         
         setTimeout(() => {
+            // TRADUCTION COMPLÈTE
             translateSite(newLang);
             currentLanguage = newLang;
             updateTranslateButton();
@@ -437,81 +838,6 @@ function updateTranslateButton() {
         translateCurrent.textContent = nextLang.toUpperCase();
         console.log(`Bouton mis à jour: ${nextLang.toUpperCase()} (site actuellement en ${currentLanguage})`);
     }
-}
-
-// Fonction pour traduire le site - VERSION AMÉLIORÉE
-function translateSite(targetLang) {
-    console.log(`Traduction vers: ${targetLang}`);
-    
-    const t = translations[targetLang];
-    if (!t) return;
-    
-    // Titre principal
-    const title = document.querySelector('.title');
-    if (title) title.textContent = t.title;
-    
-    // Sous-titre
-    const subtitle = document.querySelector('.subtitle');
-    if (subtitle) subtitle.textContent = t.subtitle;
-    
-    // Navigation
-    const navLinks = document.querySelectorAll('.nav-link');
-    navLinks[0] && (navLinks[0].textContent = t.navHome);
-    navLinks[1] && (navLinks[1].textContent = t.navDoc);
-    navLinks[2] && (navLinks[2].textContent = t.navExpedition);
-    navLinks[3] && (navLinks[3].textContent = t.navGallery);
-    navLinks[4] && (navLinks[4].textContent = t.navScience);
-    navLinks[5] && (navLinks[5].textContent = t.navResources);
-    navLinks[6] && (navLinks[6].textContent = t.navCredits);
-    
-    // Titres de sections
-    const sectionTitles = document.querySelectorAll('.section-title');
-    sectionTitles[0] && (sectionTitles[0].textContent = t.docTitle);
-    sectionTitles[1] && (sectionTitles[1].textContent = t.expeditionTitle);
-    sectionTitles[2] && (sectionTitles[2].textContent = t.galleryTitle);
-    sectionTitles[3] && (sectionTitles[3].textContent = t.scienceTitle);
-    sectionTitles[4] && (sectionTitles[4].textContent = t.resourcesTitle);
-    sectionTitles[5] && (sectionTitles[5].textContent = t.creditsTitle);
-    
-    // Descriptions du documentaire
-    const descriptions = document.querySelectorAll('.description');
-    descriptions[0] && (descriptions[0].textContent = t.docDesc1);
-    descriptions[1] && (descriptions[1].textContent = t.docDesc2);
-    
-    // Bouton documentaire - CORRECTION
-    const docButton = document.querySelector('.doc-button');
-    if (docButton) {
-        // Chercher le texte après le SVG
-        const textNode = Array.from(docButton.childNodes).find(node => 
-            node.nodeType === Node.TEXT_NODE && node.textContent.trim()
-        );
-        if (textNode) {
-            textNode.textContent = t.docButton;
-        } else {
-            // Si pas de nœud texte, l'ajouter
-            docButton.appendChild(document.createTextNode(t.docButton));
-        }
-    }
-    
-    // Copyright
-    const copyright = document.querySelector('.copyright');
-    if (copyright) copyright.textContent = t.copyright;
-    
-    // Mettre à jour le titre de la page
-    document.title = `National Geographic | ${t.title}`;
-    
-    console.log(`Site traduit en ${targetLang}`);
-}
-
-// Fonction pour mettre à jour l'option active
-function updateActiveLanguage() {
-    const options = document.querySelectorAll('.translate-option');
-    options.forEach(option => {
-        option.classList.remove('active');
-        if (option.getAttribute('data-lang') === currentLanguage) {
-            option.classList.add('active');
-        }
-    });
 }
 
 // Initialisation du bouton "retour à l'exploration" - AVEC ANIMATION DYNAMIQUE
@@ -1679,3 +2005,4 @@ document.addEventListener('keydown', function(e) {
 });
 
 console.log('=== REDIRECTION TOUCHE ENTRÉE ACTIVÉE ===');
+console.log('=== TRADUCTION COMPLÈTE INTÉGRÉE ===');
