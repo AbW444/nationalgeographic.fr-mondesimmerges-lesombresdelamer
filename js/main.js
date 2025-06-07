@@ -2001,7 +2001,7 @@ document.addEventListener('keydown', function(e) {
         
         // Redirection immédiate vers votre page collection
         setTimeout(() => {
-            window.location.href = 'https://abw444.github.io/Page-collection-IntoTheOkavango/';
+            window.location.href = 'https://github.com/AbW444/nationalgeographic.fr-mondesimmerges-intotheokavango/';
         }, 200);
     }
 });
