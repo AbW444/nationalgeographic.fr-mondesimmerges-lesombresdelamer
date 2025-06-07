@@ -912,7 +912,7 @@ function initReturnExploration() {
         // Animation de clic
         returnBtn.style.transform = 'scale(0.95)';
         setTimeout(() => {
-            window.location.href = 'http://localhost:3000/';
+            window.location.href = 'https://abw444.github.io/nationalgeographic.fr-mondesimmerges-interface/';
         }, 150);
     });
     
